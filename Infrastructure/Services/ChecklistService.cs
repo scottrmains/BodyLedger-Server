@@ -94,7 +94,7 @@ public class ChecklistService : IChecklistService
         DateTime targetCycleStart = TemplateDateHelper.GetCycleStartForReference(referenceDate, defaultStartDay, cycleOffset);
 
         // Retrieve the checklist for that cycle with its assignments, templates, and assignment items
-        var checklistEntity = await context.WeeklyChecklists
+        var checklistEntity = await context.WeeklyChecklists.AsNoTracking()
             .Where(c => c.UserId == userId && c.StartDate == targetCycleStart)
             .Include(c => c.Assignments)
                 .ThenInclude(a => a.Template)
@@ -119,21 +119,30 @@ public class ChecklistService : IChecklistService
             IsComplete = checklistEntity.IsComplete,
             StartDay = checklistEntity.StartDay,
             IsCurrent = isCurrent,
-            Assignments = checklistEntity.Assignments.Select(a => new AssignmentResponse
-            {
-                Id = a.Id,
-                TemplateId = a.TemplateId,
-                TemplateName = a.Template.Name,
-                Type = a.Template.Type,
-                // Convert the assignment offset back to a day name.
-                ScheduledDay = a.ScheduledDay.ToString(),
-                Completed = a.Completed,
-                Items = a.Items.Select(i => new AssignmentItemResponse
-                {
-                    Id = i.Id,
-                    Completed = i.Completed
-                }).ToList()
-            }).ToList()
+            Assignments = checklistEntity.Assignments
+              .Select(a => new AssignmentResponse
+              {
+                  Id = a.Id,
+                  TemplateId = a.TemplateId,
+                  TemplateName = a.Template.Name,
+                  Type = a.Template.Type,
+                  ScheduledDay = a.ScheduledDay.ToString(),
+                  TimeOfDay = a.TimeOfDay.ToString(),
+                  Completed = a.Completed,
+                  Items = a.Items
+                      .Select(i => new AssignmentItemResponse
+                      {
+                          Id = i.Id,
+                          Completed = i.Completed
+                      })
+                      .ToList()
+              })
+              .OrderBy(x => {
+                  var day = Enum.Parse<DayOfWeek>(x.ScheduledDay);
+                  var startDay = checklistEntity.StartDay;
+                  return ((int)day - (int)startDay + 7) % 7;
+              })
+              .ToList()
         };
 
         return response;

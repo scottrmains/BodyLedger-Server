@@ -7,5 +7,5 @@ using System.Threading.Tasks;
 
 namespace Domain.Assignments
 {
-    public sealed record TemplateAssignmentItemCompletedDomainEvent(Guid ItemId) : IDomainEvent;
+    public sealed record TemplateAssignmentUndoDomainEvent(Guid AssignmentId) : IDomainEvent;
 }

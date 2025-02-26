@@ -1,6 +1,7 @@
 ﻿
 using Domain.Assignments;
 using Domain.Checklist;
+using Domain.TemplateAssignments;
 using Domain.Templates;
 using Domain.Users;
 using Domain.Workouts;
@@ -18,7 +19,8 @@ public interface IApplicationDbContext
     DbSet<TemplateAssignment> TemplateAssignments { get; set; }
     DbSet<AssignmentItem> AssignmentItems { get; set; }
     DbSet<WeeklyChecklist> WeeklyChecklists { get; set; }
-    DbSet<Template> Templates { get; set; } 
+    DbSet<Template> Templates { get; set; }
+    DbSet<WorkoutExerciseAssignment> WorkoutExerciseAssignments { get; set; }
 
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);

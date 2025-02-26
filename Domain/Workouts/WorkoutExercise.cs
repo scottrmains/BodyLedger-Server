@@ -12,7 +12,6 @@ namespace Domain.Workouts
         public string ExerciseName { get; set; }
         public int RecommendedSets { get; set; }
         public string RepRanges { get; set; } 
-        public int? Weight { get; set; } 
         public Guid WorkoutTemplateId { get; set; }
         public WorkoutTemplate WorkoutTemplate { get; set; }
         public DateTime DateCreated { get; protected set; } = DateTime.UtcNow;

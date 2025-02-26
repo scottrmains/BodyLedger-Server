@@ -42,11 +42,37 @@ namespace Domain.Assignments
             }
         }
 
+        public void UndoItemCompletion(Guid itemId)
+        {
+            var item = Items.FirstOrDefault(i => i.Id == itemId);
+            if (item != null)
+            {
+                item.UndoCompletion();
+                if (Completed)
+                {
+                    UndoCompletion();
+                }
+            }
+        }
+
         public void MarkCompleted()
         {
             Completed = true;
             CompletedDate = DateTime.UtcNow;
             Raise(new TemplateAssignmentCompletedDomainEvent(Id));
+        }
+
+        public void UndoCompletion()
+        {
+            Completed = false;
+            CompletedDate = null;
+
+             foreach (var item in Items)
+            {
+               item.UndoCompletion();
+            }
+
+            Raise(new TemplateAssignmentUndoDomainEvent(Id));
         }
     }
 
@@ -61,7 +87,18 @@ namespace Domain.Assignments
     public class AssignmentItem : Entity
     {
         public bool Completed { get; private set; }
-        public void MarkCompleted() => Completed = true;
+        public DateTime? CompletedDate { get; private set; }
+        public void MarkCompleted()
+        {
+            Completed = true;
+            CompletedDate = DateTime.UtcNow;
+        }
+
+        public void UndoCompletion()
+        {
+            Completed = false;
+            CompletedDate = null;
+        }
     }
 
 

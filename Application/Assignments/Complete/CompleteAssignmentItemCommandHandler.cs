@@ -1,17 +1,10 @@
 ﻿using Application.Abstractions.Data;
 using Application.Abstractions.Messaging;
 using Domain.Templates;
-using Domain.Users;
 using Microsoft.EntityFrameworkCore;
 using SharedKernel;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
-namespace Application.TemplateAssignments.Complete;
+namespace Application.Assignments.Complete;
 
     internal sealed class CompleteAssignmentItemCommandHandler(IApplicationDbContext context)
         : ICommandHandler<CompleteAssignmentItemCommand>

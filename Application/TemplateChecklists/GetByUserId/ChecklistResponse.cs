@@ -1,4 +1,5 @@
 ﻿
+using Domain.Assignments;
 using Domain.Templates;
 using SharedKernel;
 using System.Text.Json.Serialization;
@@ -12,6 +13,7 @@ public sealed class ChecklistResponse
     public Guid UserId { get; init; }
     public DateTime StartDate { get; init; }
     public DayOfWeek StartDay { get; set; }
+
     public double CompletionPercentage { get; init; }
     public bool IsComplete { get; init; }
     public bool IsCurrent {get; init; }
@@ -27,6 +29,7 @@ public sealed class AssignmentResponse
     public TemplateType Type { get; init; }
     public string ScheduledDay { get; init; }
     public bool Completed { get; init; }
+    public string TimeOfDay { get; set; }
     public List<AssignmentItemResponse> Items { get; init; } = new();
 }
 

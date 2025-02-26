@@ -2,6 +2,7 @@
 using Application.Abstractions.Data;
 using Application.Abstractions.Messaging;
 using Domain.Users;
+using Microsoft.EntityFrameworkCore;
 using SharedKernel;
 
 namespace Application.Templates.GetOptionsByUserId;
@@ -18,13 +19,20 @@ internal sealed class GetTemplateOptionsByUserIdQueryHandler(
             return Result.Failure<TemplateOptionsResponse>(UserErrors.Unauthorized());
         }
 
-        var options = context.Templates.Where(x => x.UserId == query.UserId)
-                                        .Select(x => new KeyValuePair<Guid, string>(x.Id, x.Name))
-                                        .ToDictionary(x => x.Key, x => x.Value);
+        // Query templates and include the Type
+        var templates = await context.Templates
+            .Where(x => x.UserId == query.UserId)
+            .Select(x => new TemplateOption
+            {
+                Id = x.Id,
+                Name = x.Name,
+                Type = x.Type
+            })
+            .ToListAsync(cancellationToken);
 
         var response = new TemplateOptionsResponse
         {
-            TemplateNames = options
+            Templates = templates
         };
 
         return response;

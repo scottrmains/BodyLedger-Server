@@ -1,6 +1,7 @@
 ﻿using Application.Abstractions.Data;
 using Domain.Assignments;
 using Domain.Checklist;
+using Domain.TemplateAssignments;
 using Domain.Templates;
 using Domain.Users;
 using Domain.Workouts;
@@ -21,6 +22,7 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
     public DbSet<AssignmentItem> AssignmentItems { get; set; }
     public DbSet<WeeklyChecklist> WeeklyChecklists { get; set; }
     public  DbSet<UserProfile> UserProfiles { get; set; }
+    public DbSet<WorkoutExerciseAssignment> WorkoutExerciseAssignments { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
 

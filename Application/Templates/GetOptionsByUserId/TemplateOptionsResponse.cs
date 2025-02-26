@@ -1,14 +1,22 @@
-﻿using System;
+﻿using Domain.Templates;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Templates.GetOptionsByUserId
-{
+namespace Application.Templates.GetOptionsByUserId;
+
     public sealed class TemplateOptionsResponse
     {
-        public Dictionary<Guid, string> TemplateNames { get; set; }
+        public List<TemplateOption> Templates { get; set; } = new();
 
     }
-}
+
+
+    public class TemplateOption
+    {
+        public Guid Id { get; set; }
+        public string Name { get; set; }
+        public TemplateType Type { get; set; }
+    }
