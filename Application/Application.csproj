@@ -17,10 +17,6 @@
     <ProjectReference Include="..\SharedKernel\SharedKernel.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Assignments\DeleteById\" />
-  </ItemGroup>
-
 
 
 </Project>

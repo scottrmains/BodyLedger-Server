@@ -1,8 +1,8 @@
 ﻿using Application.Abstractions.Authentication;
 using Application.Assignments.Complete;
+using Application.Assignments.Delete;
 using Application.Assignments.Schedule;
-
-using Application.TemplateAssignments.Undo;
+using Application.Assignments.Undo;
 using Application.Templates.GetOptionsByUserId;
 using Domain.Templates;
 using MediatR;
@@ -26,6 +26,21 @@ namespace Web.Api.Controllers
             bool IsRecurring,
             TemplateType TemplateType
             );
+
+        public sealed record UndoItemRequest
+        {
+            public Guid AssignmentId { get; set; }
+        }
+
+        public sealed record CompleteItemRequest
+        {
+            public Guid AssignmentId { get; set; }
+        }
+
+        public sealed record DeleteItemRequest
+        {
+            public Guid AssignmentId { get; set; }
+        }
 
         [HttpPost("schedule-assignment")]
         public async Task<IResult> ScheduleAssignment(ScheduleTemplateAssignmentRequest request, ISender sender, IUserContext user, CancellationToken cancellationToken)
@@ -68,24 +83,33 @@ namespace Web.Api.Controllers
         }
 
 
-        [HttpPost("complete-item")]
-        public async Task<IResult> CompleteAssignmentItem(Guid assignmentId, ISender sender, IUserContext user, CancellationToken cancellationToken)
+        [HttpPut("complete")]
+        public async Task<IResult> CompleteAssignment([FromBody] CompleteItemRequest request, ISender sender, IUserContext user, CancellationToken cancellationToken)
         {
 
-            var command = new CompleteAssignmentItemCommand(assignmentId);
+            var command = new CompleteAssignmentItemCommand(request.AssignmentId);
             Result<Result> result = await sender.Send(command, cancellationToken);
             return result.Match(Results.Ok, CustomResults.Problem);
         }
 
-        [HttpPost("undo-item")]
-        public async Task<IResult> UndoAssignmentItem(Guid assignmentId, ISender sender, IUserContext user, CancellationToken cancellationToken)
+        [HttpPut("undo")]
+        public async Task<IResult> UndoAssignment([FromBody]UndoItemRequest request, ISender sender, IUserContext user, CancellationToken cancellationToken)
         {
 
-            var command = new UndoAssignmentItemCommand(assignmentId);
+            var command = new UndoAssignmentItemCommand(request.AssignmentId);
             Result<Result> result = await sender.Send(command, cancellationToken);
             return result.Match(Results.Ok, CustomResults.Problem);
         }
 
+
+        [HttpDelete("delete")]
+        public async Task<IResult> DeleteAssignment([FromBody] DeleteItemRequest request, ISender sender, IUserContext user, CancellationToken cancellationToken)
+        {
+
+            var command = new DeleteAssignmentItemCommand(request.AssignmentId);
+            Result<Result> result = await sender.Send(command, cancellationToken);
+            return result.Match(Results.Ok, CustomResults.Problem);
+        }
 
 
 

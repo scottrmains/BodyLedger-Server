@@ -26,6 +26,7 @@ namespace Domain.Assignments
 
 
         public bool IsRecurring { get; set; } = false;
+        public DateTime RecurringStartDate { get; set; }
 
         public ICollection<AssignmentItem> Items { get; set; } = new List<AssignmentItem>();
 

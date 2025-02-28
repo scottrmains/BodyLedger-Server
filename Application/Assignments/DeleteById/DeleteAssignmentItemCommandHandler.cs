@@ -4,12 +4,12 @@ using Domain.Templates;
 using Microsoft.EntityFrameworkCore;
 using SharedKernel;
 
-namespace Application.Assignments.Undo;
+namespace Application.Assignments.Delete;
 
-    internal sealed class UndoAssignmentItemCommandHandler(IApplicationDbContext context)
-        : ICommandHandler<UndoAssignmentItemCommand>
+internal sealed class DeleteAssignmentItemCommandHandler(IApplicationDbContext context)
+        : ICommandHandler<DeleteAssignmentItemCommand>
     {
-        public async Task<Result> Handle(UndoAssignmentItemCommand command, CancellationToken cancellationToken)
+        public async Task<Result> Handle(DeleteAssignmentItemCommand command, CancellationToken cancellationToken)
         {
         var assignment = await context.TemplateAssignments
              .Include(a => a.Items)
@@ -20,7 +20,8 @@ namespace Application.Assignments.Undo;
             return Result.Failure(TemplateErrors.TemplateNotFound(command.AssignmentId));
         }
 
-        assignment.UndoCompletion();
+
+        context.TemplateAssignments.Remove(assignment);
 
         await context.SaveChangesAsync(cancellationToken);
 

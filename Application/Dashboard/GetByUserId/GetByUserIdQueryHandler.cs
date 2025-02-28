@@ -29,32 +29,58 @@ internal sealed class GetDashboardByUserIdQueryHandler(
         // Use the provided reference date or default to today
         DateTime referenceDate = query.ReferenceDate?.Date ?? DateTime.UtcNow.Date;
 
+        // Cleanup any empty future checklists (no assignments) before proceeding
+       // await checklistService.CleanupEmptyFutureChecklists(query.UserId, cancellationToken);
+
+        // Ensure we have a checklist for the reference date
         var checklist = await context.WeeklyChecklists
-              .Where(c => c.UserId == query.UserId && c.StartDate <= referenceDate)
-              .OrderByDescending(c => c.StartDate)
-              .FirstOrDefaultAsync(cancellationToken);
+            .Where(c => c.UserId == query.UserId && c.StartDate <= referenceDate)
+            .OrderByDescending(c => c.StartDate)
+            .FirstOrDefaultAsync(cancellationToken);
 
         if (checklist is null)
         {
-          checklist = await checklistService.InitiateFirstChecklist(query.UserId, cancellationToken);
+            checklist = await checklistService.InitiateFirstChecklist(query.UserId, cancellationToken);
         }
 
+        // Create next week's checklist based on recurring assignments
+        await checklistService.InitiateNextChecklist(checklist, cancellationToken);
 
-         await checklistService.InitiateNextChecklist(checklist, cancellationToken);
-        
-
-        //maybe have this dynamically set by user?
+        // Get the start day (typically Monday)
         DayOfWeek defaultStartDay = checklist.StartDay;
-        var currentChecklist = await checklistService.GetChecklistResponseForCycleAsync(query.UserId, referenceDate, 0, defaultStartDay, cancellationToken);
-        var previousChecklist = await checklistService.GetChecklistResponseForCycleAsync(query.UserId, referenceDate, -1, defaultStartDay, cancellationToken);
-        var nextChecklist = await checklistService.GetChecklistResponseForCycleAsync(query.UserId, referenceDate, +1, defaultStartDay, cancellationToken);
 
+        // Get checklists for current, previous, and next week
+        var currentChecklist = await checklistService.GetChecklistResponseForCycleAsync(
+            query.UserId, referenceDate, 0, defaultStartDay, cancellationToken);
+
+        var previousChecklist = await checklistService.GetChecklistResponseForCycleAsync(
+            query.UserId, referenceDate, -1, defaultStartDay, cancellationToken);
+
+        var nextChecklist = await checklistService.GetChecklistResponseForCycleAsync(
+            query.UserId, referenceDate, +1, defaultStartDay, cancellationToken);
+
+        // Get all available date ranges for the calendar
+        var dateRanges = await checklistService.GetAvailableDateRanges(query.UserId, cancellationToken);
+
+        // Calculate calendar bounds
+        var today = DateTime.UtcNow.Date;
+        var minDate = dateRanges.Count > 0
+            ? dateRanges.Min(d => d.StartDate)
+            : today;
+
+        var maxDate = today.AddDays(12 * 7); 
 
         var response = new DashboardResponse
         {
             CurrentChecklist = currentChecklist,
             PreviousChecklist = previousChecklist,
             FutureChecklist = nextChecklist,
+            DateRanges = dateRanges,
+            CalendarBounds = new CalendarBounds
+            {
+                MinDate = minDate,
+                MaxDate = maxDate
+            }
         };
 
         return response;
