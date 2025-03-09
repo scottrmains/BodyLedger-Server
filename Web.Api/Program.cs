@@ -36,7 +36,7 @@ using HealthChecks.UI.Client;
                     app.ApplyMigrations();
                 }
 
-app.MapHealthChecks("health", new HealthCheckOptions
+            app.MapHealthChecks("health", new HealthCheckOptions
             {
                 ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
             });
