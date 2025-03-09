@@ -26,6 +26,10 @@ namespace Domain.Templates;
          "Templates.TemplateAssignmentExists",
          $"An assignment for {checklistId} exists on {dayOfWeek}");
 
+        public static Error UnsupportedTemplateType(string template) => Error.Problem(
+            "Templates.UnsupportedTemplateType",
+            "The template type is not supported");
+
     public static readonly Error TemplateNameNotUnique = Error.Conflict(
         "WorkoutTemplates.NameNotUnique",
         "The template name has been used before.");

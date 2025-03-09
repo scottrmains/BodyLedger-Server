@@ -11,7 +11,8 @@ namespace Domain.Templates
         Workout = 1,
         Fitness = 2,
         Supplement = 3,
-        Reminder = 4
+        Reminder = 4,
+        Unknown =5
     }
 
 }

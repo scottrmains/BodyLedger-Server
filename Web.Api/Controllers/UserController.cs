@@ -4,7 +4,6 @@ using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SharedKernel;
-using static Web.Api.Controllers.TemplateChecklistController;
 using Web.Api.Infrastructure;
 using Web.Api.Extensions;
 using Application.Users.GetProfileByUserId;

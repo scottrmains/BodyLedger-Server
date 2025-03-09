@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
 using Web.Api.Extensions;
 using Web.Api.Infrastructure;
 
@@ -13,7 +14,11 @@ public static class DependencyInjection
         services.AddControllers()
                     .AddJsonOptions(options =>
                     {
-                        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()); 
+                        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+                        options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+                        options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+
+                        options.JsonSerializerOptions.TypeInfoResolver = new PolymorphicTypeResolver();
                     });
 
 

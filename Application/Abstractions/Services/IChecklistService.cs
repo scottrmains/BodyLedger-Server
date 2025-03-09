@@ -1,10 +1,6 @@
-﻿using Application.TemplateChecklists.GetByUserId;
-using Domain.Checklist;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Application.Checklists.GetByUserId;
+using Domain.Checklists;
+
 
 namespace Application.Abstractions.Services
 {
@@ -13,12 +9,12 @@ namespace Application.Abstractions.Services
         /// <summary>
         /// Creates a checklist for the next week if it doesn't exist and copies recurring assignments.
         /// </summary>
-        Task<WeeklyChecklist> InitiateNextChecklist(WeeklyChecklist existingChecklist, CancellationToken cancellationToken);
+        Task<Checklist> InitiateNextChecklist(Checklist existingChecklist, CancellationToken cancellationToken);
 
         /// <summary>
         /// Creates the initial checklist for a user starting from the most recent Monday.
         /// </summary>
-        Task<WeeklyChecklist> InitiateFirstChecklist(Guid userId, CancellationToken cancellationToken);
+        Task<Checklist> InitiateFirstChecklist(Guid userId, CancellationToken cancellationToken);
 
       
         /// <summary>
@@ -37,8 +33,11 @@ namespace Application.Abstractions.Services
             CancellationToken cancellationToken);
 
         /// <summary>
-        /// Removes empty future checklists that have no assignments
+        /// Adds recurring assignments to a checklist for the next week.
         /// </summary>
-        Task CleanupEmptyFutureChecklists(Guid userId, CancellationToken cancellationToken);
+        Task<Checklist> EnsureChecklistForWeekWithRecurringAssignments(
+         Guid userId,
+         DateTime targetDate,
+         CancellationToken cancellationToken);
     }
 }

@@ -1,5 +1,7 @@
 ﻿using Application.Abstractions.Behaviors;
 using Application.Abstractions.Services;
+using Application.Assignments.Mapping;
+using Application.Templates.Mapping;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -17,6 +19,8 @@ public static class DependencyInjection
             config.AddOpenBehavior(typeof(ValidationPipelineBehavior<,>));
         });
 
+        services.AddScoped<TemplateMapper>();
+        services.AddScoped<AssignmentMapper>();
         services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly, includeInternalTypes: true);
 
         return services;

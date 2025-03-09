@@ -18,7 +18,7 @@ internal sealed class ScheduleWorkoutAssignmentCommandHandler(IApplicationDbCont
     public async Task<Result<Guid>> Handle(ScheduleWorkoutAssignmentCommand command, CancellationToken cancellationToken)
     {
 
-        var checklist = await context.WeeklyChecklists
+        var checklist = await context.Checklists
            .FirstOrDefaultAsync(c => c.Id == command.ChecklistId && c.UserId == command.UserId, cancellationToken);
 
         if (checklist == null)
@@ -37,10 +37,10 @@ internal sealed class ScheduleWorkoutAssignmentCommandHandler(IApplicationDbCont
         }
 
         // Check for existing assignment with same day and type
-        var existingAssignment = await context.TemplateAssignments
+        var existingAssignment = await context.Assignments
             .Include(a => a.Template)
             .FirstOrDefaultAsync(a =>
-                a.TemplateChecklistId == checklist.Id &&
+                a.ChecklistId == checklist.Id &&
                 a.ScheduledDay == command.ScheduledDay &&
                 a.Template.Id == command.WorkoutTemplateId,
                 cancellationToken);
@@ -53,15 +53,18 @@ internal sealed class ScheduleWorkoutAssignmentCommandHandler(IApplicationDbCont
         }
 
         // Create the template assignment
-        var assignment = new TemplateAssignment
+        var assignment = new Assignment
         {
             TemplateId = workoutTemplate.Id,
+            Template = workoutTemplate,
             ScheduledDay = command.ScheduledDay,
-            TemplateChecklistId = checklist.Id,
-            IsRecurring = command.IsRecurring
+            ChecklistId = checklist.Id,
+            IsRecurring = command.IsRecurring,
+            RecurringStartDate = checklist.StartDate
+            
         };
 
-        context.TemplateAssignments.Add(assignment);
+        context.Assignments.Add(assignment);
         await context.SaveChangesAsync(cancellationToken); 
 
         // Create workout exercise assignments for each exercise in the template
@@ -71,6 +74,7 @@ internal sealed class ScheduleWorkoutAssignmentCommandHandler(IApplicationDbCont
             {
                 TemplateAssignmentId = assignment.Id,
                 WorkoutExerciseId = exercise.Id,
+                WorkoutExercise = exercise
             };
 
             context.WorkoutExerciseAssignments.Add(workoutExerciseAssignment);

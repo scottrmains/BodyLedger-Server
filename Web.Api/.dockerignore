@@ -1,0 +1,25 @@
+# Ignore Visual Studio files and folders
+.vs/
+*.csproj.user
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Ignore build outputs
+bin/
+obj/
+
+# Ignore other temporary files
+*.log
+*.temp
+*.tmp
+*.pid
+*.tar.gz
+*.swp
+
+# Ignore specific files that should not be included
+Trackspace.Api/.vs/
+Trackspace.Core/.vs/
+Trackspace.Data/.vs/
+Trackspace.Domain/.vs/

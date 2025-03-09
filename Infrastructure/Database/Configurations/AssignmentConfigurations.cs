@@ -6,14 +6,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Domain.Assignments;
+using Domain.TemplateAssignments;
 
 namespace Infrastructure.Database.Configurations
 {
-    public class TemplateAssignmentConfiguration : IEntityTypeConfiguration<TemplateAssignment>
+    public class AssignmentConfiguration : IEntityTypeConfiguration<Assignment>
     {
-        public void Configure(EntityTypeBuilder<TemplateAssignment> builder)
+        public void Configure(EntityTypeBuilder<Assignment> builder)
         {
-            builder.ToTable("template_assignments");
+            builder.ToTable("assignments");
 
             builder.HasKey(ta => ta.Id);
             builder.Property(ta => ta.ScheduledDay)
@@ -35,15 +36,36 @@ namespace Infrastructure.Database.Configurations
         public void Configure(EntityTypeBuilder<AssignmentItem> builder)
         {
             builder.ToTable("assignment_items");
-
             builder.HasKey(ai => ai.Id);
-            // Configure additional properties for AssignmentItem as needed.
 
+            // Add this line to make it use TPT inheritance
+            builder.UseTptMappingStrategy();
+
+            // Configure additional properties for AssignmentItem as needed.
             // Establish relationship with TemplateAssignment
-            // Assuming each AssignmentItem belongs to one TemplateAssignment.
-            builder.HasOne<TemplateAssignment>()
+            builder.HasOne(ai => ai.TemplateAssignment)
                 .WithMany(ta => ta.Items)
-                .HasForeignKey("TemplateAssignmentId")
+                .HasForeignKey(ai => ai.TemplateAssignmentId)
+                .IsRequired();
+        }
+    }
+
+    public class WorkoutExerciseAssignmentConfiguration : IEntityTypeConfiguration<WorkoutExerciseAssignment>
+    {
+        public void Configure(EntityTypeBuilder<WorkoutExerciseAssignment> builder)
+        {
+            // Specify that this is a derived type with its own table
+            builder.ToTable("workout_exercise_assignments");
+
+            // Configure specific properties
+            builder.Property(wea => wea.CompletedSets);
+            builder.Property(wea => wea.CompletedReps);
+            builder.Property(wea => wea.ActualWeight);
+
+            // Configure relationship with WorkoutExercise
+            builder.HasOne(wea => wea.WorkoutExercise)
+                .WithMany()
+                .HasForeignKey(wea => wea.WorkoutExerciseId)
                 .IsRequired();
         }
     }

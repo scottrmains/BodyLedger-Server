@@ -23,40 +23,16 @@ namespace Infrastructure.Database.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("Domain.Assignments.AssignmentItem", b =>
+            modelBuilder.Entity("Domain.Assignments.Assignment", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<bool>("Completed")
-                        .HasColumnType("boolean")
-                        .HasColumnName("completed");
-
-                    b.Property<DateTime?>("CompletedDate")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("completed_date");
-
-                    b.Property<Guid>("TemplateAssignmentId")
+                    b.Property<Guid>("ChecklistId")
                         .HasColumnType("uuid")
-                        .HasColumnName("template_assignment_id");
-
-                    b.HasKey("Id")
-                        .HasName("pk_assignment_items");
-
-                    b.HasIndex("TemplateAssignmentId")
-                        .HasDatabaseName("ix_assignment_items_template_assignment_id");
-
-                    b.ToTable("assignment_items", "public");
-                });
-
-            modelBuilder.Entity("Domain.Assignments.TemplateAssignment", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
+                        .HasColumnName("checklist_id");
 
                     b.Property<bool>("Completed")
                         .HasColumnType("boolean")
@@ -78,10 +54,6 @@ namespace Infrastructure.Database.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("scheduled_day");
 
-                    b.Property<Guid>("TemplateChecklistId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("template_checklist_id");
-
                     b.Property<Guid>("TemplateId")
                         .HasColumnType("uuid")
                         .HasColumnName("template_id");
@@ -91,18 +63,47 @@ namespace Infrastructure.Database.Migrations
                         .HasColumnName("time_of_day");
 
                     b.HasKey("Id")
-                        .HasName("pk_template_assignments");
+                        .HasName("pk_assignments");
 
-                    b.HasIndex("TemplateChecklistId")
-                        .HasDatabaseName("ix_template_assignments_template_checklist_id");
+                    b.HasIndex("ChecklistId")
+                        .HasDatabaseName("ix_assignments_checklist_id");
 
                     b.HasIndex("TemplateId")
-                        .HasDatabaseName("ix_template_assignments_template_id");
+                        .HasDatabaseName("ix_assignments_template_id");
 
-                    b.ToTable("template_assignments", "public");
+                    b.ToTable("assignments", "public");
                 });
 
-            modelBuilder.Entity("Domain.Checklist.WeeklyChecklist", b =>
+            modelBuilder.Entity("Domain.Assignments.AssignmentItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<bool>("Completed")
+                        .HasColumnType("boolean")
+                        .HasColumnName("completed");
+
+                    b.Property<DateTime?>("CompletedDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("completed_date");
+
+                    b.Property<Guid>("TemplateAssignmentId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("template_assignment_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TemplateAssignmentId")
+                        .HasDatabaseName("ix_assignment_items_template_assignment_id");
+
+                    b.ToTable("assignment_items", "public");
+
+                    b.UseTptMappingStrategy();
+                });
+
+            modelBuilder.Entity("Domain.Checklists.Checklist", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -130,56 +131,9 @@ namespace Infrastructure.Database.Migrations
                         .HasColumnName("user_id");
 
                     b.HasKey("Id")
-                        .HasName("pk_weekly_checklists");
+                        .HasName("pk_checklists");
 
-                    b.ToTable("weekly_checklists", "public");
-                });
-
-            modelBuilder.Entity("Domain.TemplateAssignments.WorkoutExerciseAssignment", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<int?>("ActualWeight")
-                        .HasColumnType("integer")
-                        .HasColumnName("actual_weight");
-
-                    b.Property<DateTime?>("CompletedDate")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("completed_date");
-
-                    b.Property<int?>("CompletedReps")
-                        .HasColumnType("integer")
-                        .HasColumnName("completed_reps");
-
-                    b.Property<int?>("CompletedSets")
-                        .HasColumnType("integer")
-                        .HasColumnName("completed_sets");
-
-                    b.Property<bool>("IsCompleted")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_completed");
-
-                    b.Property<Guid>("TemplateAssignmentId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("template_assignment_id");
-
-                    b.Property<Guid>("WorkoutExerciseId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("workout_exercise_id");
-
-                    b.HasKey("Id")
-                        .HasName("pk_workout_exercise_assignments");
-
-                    b.HasIndex("TemplateAssignmentId")
-                        .HasDatabaseName("ix_workout_exercise_assignments_template_assignment_id");
-
-                    b.HasIndex("WorkoutExerciseId")
-                        .HasDatabaseName("ix_workout_exercise_assignments_workout_exercise_id");
-
-                    b.ToTable("workout_exercise_assignments", "public");
+                    b.ToTable("checklists", "public");
                 });
 
             modelBuilder.Entity("Domain.Templates.Template", b =>
@@ -347,6 +301,32 @@ namespace Infrastructure.Database.Migrations
                     b.ToTable("workout_exercises", "public");
                 });
 
+            modelBuilder.Entity("Domain.TemplateAssignments.WorkoutExerciseAssignment", b =>
+                {
+                    b.HasBaseType("Domain.Assignments.AssignmentItem");
+
+                    b.Property<int?>("ActualWeight")
+                        .HasColumnType("integer")
+                        .HasColumnName("actual_weight");
+
+                    b.Property<int?>("CompletedReps")
+                        .HasColumnType("integer")
+                        .HasColumnName("completed_reps");
+
+                    b.Property<int?>("CompletedSets")
+                        .HasColumnType("integer")
+                        .HasColumnName("completed_sets");
+
+                    b.Property<Guid>("WorkoutExerciseId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("workout_exercise_id");
+
+                    b.HasIndex("WorkoutExerciseId")
+                        .HasDatabaseName("ix_workout_exercise_assignments_workout_exercise_id");
+
+                    b.ToTable("workout_exercise_assignments", "public");
+                });
+
             modelBuilder.Entity("Domain.Workouts.WorkoutTemplate", b =>
                 {
                     b.HasBaseType("Domain.Templates.Template");
@@ -354,56 +334,37 @@ namespace Infrastructure.Database.Migrations
                     b.HasDiscriminator().HasValue("workout");
                 });
 
-            modelBuilder.Entity("Domain.Assignments.AssignmentItem", b =>
+            modelBuilder.Entity("Domain.Assignments.Assignment", b =>
                 {
-                    b.HasOne("Domain.Assignments.TemplateAssignment", null)
-                        .WithMany("Items")
-                        .HasForeignKey("TemplateAssignmentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_assignment_items_template_assignments_template_assignment_id");
-                });
-
-            modelBuilder.Entity("Domain.Assignments.TemplateAssignment", b =>
-                {
-                    b.HasOne("Domain.Checklist.WeeklyChecklist", "TemplateChecklist")
+                    b.HasOne("Domain.Checklists.Checklist", "Checklist")
                         .WithMany("Assignments")
-                        .HasForeignKey("TemplateChecklistId")
+                        .HasForeignKey("ChecklistId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_template_assignments_weekly_checklists_template_checklist_id");
+                        .HasConstraintName("fk_assignments_checklists_checklist_id");
 
                     b.HasOne("Domain.Templates.Template", "Template")
                         .WithMany()
                         .HasForeignKey("TemplateId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_template_assignments_templates_template_id");
+                        .HasConstraintName("fk_assignments_templates_template_id");
+
+                    b.Navigation("Checklist");
 
                     b.Navigation("Template");
-
-                    b.Navigation("TemplateChecklist");
                 });
 
-            modelBuilder.Entity("Domain.TemplateAssignments.WorkoutExerciseAssignment", b =>
+            modelBuilder.Entity("Domain.Assignments.AssignmentItem", b =>
                 {
-                    b.HasOne("Domain.Assignments.TemplateAssignment", "TemplateAssignment")
-                        .WithMany()
+                    b.HasOne("Domain.Assignments.Assignment", "TemplateAssignment")
+                        .WithMany("Items")
                         .HasForeignKey("TemplateAssignmentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_workout_exercise_assignments_template_assignments_template_");
-
-                    b.HasOne("Domain.Workouts.WorkoutExercise", "WorkoutExercise")
-                        .WithMany()
-                        .HasForeignKey("WorkoutExerciseId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_workout_exercise_assignments_workout_exercises_workout_exer");
+                        .HasConstraintName("fk_assignment_items_assignments_template_assignment_id");
 
                     b.Navigation("TemplateAssignment");
-
-                    b.Navigation("WorkoutExercise");
                 });
 
             modelBuilder.Entity("Domain.Templates.Template", b =>
@@ -442,12 +403,31 @@ namespace Infrastructure.Database.Migrations
                     b.Navigation("WorkoutTemplate");
                 });
 
-            modelBuilder.Entity("Domain.Assignments.TemplateAssignment", b =>
+            modelBuilder.Entity("Domain.TemplateAssignments.WorkoutExerciseAssignment", b =>
+                {
+                    b.HasOne("Domain.Assignments.AssignmentItem", null)
+                        .WithOne()
+                        .HasForeignKey("Domain.TemplateAssignments.WorkoutExerciseAssignment", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_workout_exercise_assignments_assignment_items_id");
+
+                    b.HasOne("Domain.Workouts.WorkoutExercise", "WorkoutExercise")
+                        .WithMany()
+                        .HasForeignKey("WorkoutExerciseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_workout_exercise_assignments_workout_exercises_workout_exer");
+
+                    b.Navigation("WorkoutExercise");
+                });
+
+            modelBuilder.Entity("Domain.Assignments.Assignment", b =>
                 {
                     b.Navigation("Items");
                 });
 
-            modelBuilder.Entity("Domain.Checklist.WeeklyChecklist", b =>
+            modelBuilder.Entity("Domain.Checklists.Checklist", b =>
                 {
                     b.Navigation("Assignments");
                 });

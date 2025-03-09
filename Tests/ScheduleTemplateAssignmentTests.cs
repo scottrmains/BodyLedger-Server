@@ -11,7 +11,7 @@ using Application.Abstractions.Data;
 using Tests;
 using Application.Abstractions.Services;
 
-using Domain.Checklist;
+using Domain.Checklists;
 
 namespace Tests
 {

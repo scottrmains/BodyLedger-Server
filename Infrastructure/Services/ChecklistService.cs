@@ -1,10 +1,13 @@
 ﻿using Application.Abstractions.Data;
 using Application.Abstractions.Services;
+using Application.Assignments.Mapping;
+using Application.Checklists.GetByUserId;
 using Application.Helpers;
-using Application.TemplateChecklists.GetByUserId;
+
 using Domain.Assignments;
-using Domain.Checklist;
-using Domain.Templates;
+using Domain.Checklists;
+using Domain.TemplateAssignments;
+using Domain.Workouts;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Services;
@@ -12,32 +15,34 @@ namespace Infrastructure.Services;
 public class ChecklistService : IChecklistService
     {
         private readonly IApplicationDbContext context;
-
-        public ChecklistService(IApplicationDbContext context)
+         private readonly AssignmentMapper _mapper;
+        public ChecklistService(IApplicationDbContext context, AssignmentMapper mapper)
         {
             this.context = context;
+            _mapper = mapper;
         }
 
 
-    public async Task<WeeklyChecklist> InitiateNextChecklist(WeeklyChecklist existingChecklist, CancellationToken cancellationToken)
+    public async Task<Checklist> InitiateNextChecklist(Checklist existingChecklist, CancellationToken cancellationToken)
     {
         DateTime nextCycleStart = existingChecklist.StartDate.AddDays(7);
-        var nextChecklist = await context.WeeklyChecklists
+        var nextChecklist = await context.Checklists
             .Where(c => c.UserId == existingChecklist.UserId && c.StartDate == nextCycleStart)
             .FirstOrDefaultAsync(cancellationToken);
 
         var startLimit = TemplateDateHelper.GetStartLimit(existingChecklist.StartDate, existingChecklist.StartDay);
-
-        if (nextChecklist == null)
+        var today = DateTime.UtcNow.Date;
+        var maxDate = today.AddDays(12 * 7);
+        if (nextChecklist == null && existingChecklist.StartDate < maxDate)
         {
-            nextChecklist = new WeeklyChecklist
+            nextChecklist = new Checklist
             {
                 UserId = existingChecklist.UserId,
                 StartDay = existingChecklist.StartDay,
                 StartDate = nextCycleStart,
                 Assignments = existingChecklist.Assignments
                     .Where(x => x.IsRecurring && (x.RecurringStartDate == null || x.RecurringStartDate <= nextCycleStart))
-                    .Select(x => new TemplateAssignment
+                    .Select(x => new Assignment
                     {
                         TemplateId = x.TemplateId,
                         ScheduledDay = x.ScheduledDay,
@@ -47,7 +52,7 @@ public class ChecklistService : IChecklistService
                     }).ToList()
 
             };
-            context.WeeklyChecklists.Add(nextChecklist);
+            context.Checklists.Add(nextChecklist);
             await context.SaveChangesAsync(cancellationToken);
         }
         
@@ -57,7 +62,7 @@ public class ChecklistService : IChecklistService
 
 
 
-    public async Task<WeeklyChecklist> InitiateFirstChecklist(Guid userId, CancellationToken cancellationToken)
+    public async Task<Checklist> InitiateFirstChecklist(Guid userId, CancellationToken cancellationToken)
     {
         DateTime today = DateTime.UtcNow.Date;
         int daysSinceLastMonday = (int)today.DayOfWeek - (int)DayOfWeek.Monday;
@@ -69,14 +74,14 @@ public class ChecklistService : IChecklistService
 
         DateTime startDate = today.AddDays(-daysSinceLastMonday);
 
-        var checklist = new WeeklyChecklist
+        var checklist = new Checklist
         {
             UserId = userId,
             StartDay = DayOfWeek.Monday,
             StartDate = startDate
         };
 
-        context.WeeklyChecklists.Add(checklist);
+        context.Checklists.Add(checklist);
         await context.SaveChangesAsync(cancellationToken);
 
         return checklist;
@@ -93,7 +98,7 @@ public class ChecklistService : IChecklistService
         var result = new List<DateRangeInfo>();
 
         // Get all existing checklists for the user
-        var existingChecklists = await context.WeeklyChecklists
+        var existingChecklists = await context.Checklists
             .Where(c => c.UserId == userId)
             .OrderBy(c => c.StartDate)
             .ToListAsync(cancellationToken);
@@ -154,7 +159,7 @@ public class ChecklistService : IChecklistService
         DateTime targetCycleStart = TemplateDateHelper.GetCycleStartForReference(referenceDate, defaultStartDay, cycleOffset);
 
         // Retrieve the checklist for that cycle with its assignments, templates, and assignment items
-        var checklistEntity = await context.WeeklyChecklists.AsNoTracking()
+        var checklistEntity = await context.Checklists.AsNoTracking()
             .Where(c => c.UserId == userId && c.StartDate == targetCycleStart)
             .Include(c => c.Assignments)
                 .ThenInclude(a => a.Template)
@@ -165,10 +170,34 @@ public class ChecklistService : IChecklistService
         if (checklistEntity == null)
             return null;
 
+        // Get all assignment IDs to fetch exercise assignments
+        var assignmentIds = checklistEntity.Assignments.Select(a => a.Id).ToList();
+
+        // Load workout exercise assignments
+        var exerciseAssignments = await context.WorkoutExerciseAssignments
+            .Where(e => assignmentIds.Contains(e.TemplateAssignmentId))
+            .Include(e => e.WorkoutExercise)
+            .ToListAsync(cancellationToken);
+
+        // Group exercise assignments by assignment ID
+        var exerciseAssignmentsByAssignment = exerciseAssignments
+            .GroupBy(e => e.TemplateAssignmentId)
+            .ToDictionary(g => g.Key, g => g.ToList());
+
         DateTime today = DateTime.UtcNow.Date;
         bool isCurrent = today >= checklistEntity.StartDate &&
                          today < checklistEntity.StartDate.AddDays(7);
 
+        // Use mapper to create properly typed responses
+        var assignments = _mapper.MapAssignmentsToResponses(
+                            checklistEntity.Assignments,
+                            exerciseAssignmentsByAssignment);
+
+        assignments = assignments.OrderBy(x => {
+            var day = Enum.Parse<DayOfWeek>(x.ScheduledDay);
+            var startDay = checklistEntity.StartDay;
+            return ((int)day - (int)startDay + 7) % 7;
+        }).ToList();
         // Map the TemplateChecklist entity to ChecklistResponse DTO
         var response = new ChecklistResponse
         {
@@ -179,39 +208,14 @@ public class ChecklistService : IChecklistService
             IsComplete = checklistEntity.IsComplete,
             StartDay = checklistEntity.StartDay,
             IsCurrent = isCurrent,
-            Assignments = checklistEntity.Assignments
-                .Select(a => new AssignmentResponse
-                {
-                    Id = a.Id,
-                    TemplateId = a.TemplateId,
-                    TemplateName = a.Template.Name,
-                    Type = a.Template.Type,
-                    ScheduledDay = a.ScheduledDay.ToString(),
-                    TimeOfDay = a.TimeOfDay.ToString(),
-                    Completed = a.Completed,
-                    IsRecurring = a.IsRecurring,
-                    RecurringStartDate = a.RecurringStartDate,
-                    Items = a.Items
-                        .Select(i => new AssignmentItemResponse
-                        {
-                            Id = i.Id,
-                            Completed = i.Completed
-                        })
-                        .ToList()
-                })
-                .OrderBy(x => {
-                    var day = Enum.Parse<DayOfWeek>(x.ScheduledDay);
-                    var startDay = checklistEntity.StartDay;
-                    return ((int)day - (int)startDay + 7) % 7;
-                })
-                .ToList()
+            Assignments = assignments
         };
 
         return response;
     }
 
     // Calculate completion percentage based on completed assignments vs total assignments
-    private double CalculateCompletionPercentage(WeeklyChecklist checklist)
+    private double CalculateCompletionPercentage(Checklist checklist)
     {
         if (!checklist.Assignments.Any())
             return 0;
@@ -222,23 +226,158 @@ public class ChecklistService : IChecklistService
         return Math.Round((double)completedAssignments / totalAssignments * 100, 1);
     }
 
-    /// <summary>
-    /// Removes empty future checklists that have no assignments
-    /// </summary>
-    public async Task CleanupEmptyFutureChecklists(Guid userId, CancellationToken cancellationToken)
+    public async Task<Checklist> EnsureChecklistForWeekWithRecurringAssignments(
+        Guid userId,
+        DateTime targetDate,
+        CancellationToken cancellationToken)
     {
-        DateTime today = DateTime.UtcNow.Date;
+        // Find or create the checklist for this week
+        var targetWeekStart = TemplateDateHelper.GetCycleStartForReference(targetDate, DayOfWeek.Monday, 0);
+        var existingChecklist = await context.Checklists
+            .Include(c => c.Assignments)
+            .FirstOrDefaultAsync(c => c.UserId == userId && c.StartDate == targetWeekStart, cancellationToken);
 
-        // Find future checklists with no assignments
-        var emptyFutureChecklists = await context.WeeklyChecklists
-            .Where(c => c.UserId == userId &&
-                   c.StartDate > today &&
-                   !c.Assignments.Any())
+        // If the checklist doesn't exist, create it
+        if (existingChecklist == null)
+        {
+            // Get the most recent checklist before the target date to use as template
+            var previousChecklist = await context.Checklists
+                .Include(c => c.Assignments)
+                    .ThenInclude(a => a.Template)
+                .Where(c => c.UserId == userId && c.StartDate < targetWeekStart)
+                .OrderByDescending(c => c.StartDate)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (previousChecklist == null)
+            {
+                // No previous checklist, create a new empty one
+                existingChecklist = new Checklist
+                {
+                    UserId = userId,
+                    StartDay = DayOfWeek.Monday,
+                    StartDate = targetWeekStart,
+                    Assignments = new List<Assignment>()
+                };
+
+                context.Checklists.Add(existingChecklist);
+                await context.SaveChangesAsync(cancellationToken);
+            }
+            else
+            {
+                // Create new checklist based on the previous one
+                existingChecklist = new Checklist
+                {
+                    UserId = userId,
+                    StartDay = previousChecklist.StartDay,
+                    StartDate = targetWeekStart,
+                    Assignments = new List<Assignment>()
+                };
+
+                // Add context and save to get a valid ID
+                context.Checklists.Add(existingChecklist);
+                await context.SaveChangesAsync(cancellationToken);
+
+                // Now add recurring assignments from all previous checklists
+                await AddRecurringAssignmentsToChecklist(userId, existingChecklist, cancellationToken);
+            }
+        }
+        else if (!existingChecklist.Assignments.Any())
+        {
+            // Checklist exists but has no assignments, check if we need to add recurring ones
+            await AddRecurringAssignmentsToChecklist(userId, existingChecklist, cancellationToken);
+        }
+
+        return existingChecklist;
+    }
+
+    private async Task AddRecurringAssignmentsToChecklist(
+        Guid userId,
+        Checklist targetChecklist,
+        CancellationToken cancellationToken)
+    {
+        // Get all recurring assignments from previous checklists
+        var recurringAssignments = await context.Assignments
+            .Include(a => a.Template)
+            .Include(a => a.Checklist)
+            .Where(a =>
+                a.Checklist.UserId == userId &&
+                a.Checklist.StartDate < targetChecklist.StartDate &&
+                a.IsRecurring &&
+                (a.RecurringStartDate == null || a.RecurringStartDate <= targetChecklist.StartDate))
             .ToListAsync(cancellationToken);
 
-        if (emptyFutureChecklists.Any())
+        if (!recurringAssignments.Any())
         {
-            context.WeeklyChecklists.RemoveRange(emptyFutureChecklists);
+            return; // No recurring assignments to add
+        }
+
+        // Group by template and scheduled day to avoid duplicates
+        var assignmentGroups = recurringAssignments
+            .GroupBy(a => new { a.TemplateId, a.ScheduledDay })
+            .Select(g => g.OrderByDescending(a => a.Checklist.StartDate).First())
+            .ToList();
+
+        // Create new assignments
+        var newAssignments = new List<Assignment>();
+        var exerciseAssignments = new List<object>(); // Replace with your exercise assignment type
+
+        foreach (var assignment in assignmentGroups)
+        {
+            // Skip if this assignment already exists in the target checklist
+            if (targetChecklist.Assignments.Any(a =>
+                a.TemplateId == assignment.TemplateId &&
+                a.ScheduledDay == assignment.ScheduledDay))
+            {
+                continue;
+            }
+
+            // Create a new assignment
+            var newAssignment = new Assignment
+            {
+                TemplateId = assignment.TemplateId,
+                ScheduledDay = assignment.ScheduledDay,
+                ChecklistId = targetChecklist.Id,
+                IsRecurring = assignment.IsRecurring,
+                RecurringStartDate = assignment.RecurringStartDate,
+                TimeOfDay = assignment.TimeOfDay
+            };
+
+            newAssignments.Add(newAssignment);
+        }
+
+        // Add all assignments in one batch
+        if (newAssignments.Any())
+        {
+            // Add all new assignments
+            context.Assignments.AddRange(newAssignments);
+            await context.SaveChangesAsync(cancellationToken);
+
+            // For each assignment, get its exercises and create assignment items
+            foreach (var newAssignment in newAssignments)
+            {
+                // Get template details including exercises
+                if (newAssignment.Template is WorkoutTemplate workoutTemplate)
+                {
+                    var exercises = await context.WorkoutExercises
+                        .Where(e => e.WorkoutTemplateId == workoutTemplate.Id)
+                        .ToListAsync(cancellationToken);
+
+                    // Create exercise assignments
+                    foreach (var exercise in exercises)
+                    {
+                        var exerciseAssignment = new WorkoutExerciseAssignment
+                        {
+                            TemplateAssignmentId = newAssignment.Id,
+                            WorkoutExerciseId = exercise.Id
+                        };
+
+                        context.WorkoutExerciseAssignments.Add(exerciseAssignment);
+                    }
+                }
+                // Handle other template types if needed
+            }
+
+            // Save all exercise assignments
             await context.SaveChangesAsync(cancellationToken);
         }
     }

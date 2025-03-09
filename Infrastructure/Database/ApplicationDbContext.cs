@@ -1,12 +1,13 @@
 ﻿using Application.Abstractions.Data;
 using Domain.Assignments;
-using Domain.Checklist;
+using Domain.Checklists;
 using Domain.TemplateAssignments;
 using Domain.Templates;
 using Domain.Users;
 using Domain.Workouts;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using SharedKernel;
 
 namespace Infrastructure.Database;
@@ -18,9 +19,9 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
     public DbSet<Template> Templates { get; set; } 
     public DbSet<WorkoutTemplate> WorkoutTemplates { get; set; }
     public DbSet<WorkoutExercise> WorkoutExercises { get; set; }
-    public DbSet<TemplateAssignment> TemplateAssignments { get; set; }
+    public DbSet<Assignment> Assignments { get; set; }
     public DbSet<AssignmentItem> AssignmentItems { get; set; }
-    public DbSet<WeeklyChecklist> WeeklyChecklists { get; set; }
+    public DbSet<Checklist> Checklists { get; set; }
     public  DbSet<UserProfile> UserProfiles { get; set; }
     public DbSet<WorkoutExerciseAssignment> WorkoutExerciseAssignments { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -49,6 +50,11 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
         await PublishDomainEventsAsync();
 
         return result;
+    }
+
+    public new EntityEntry<TEntity> Entry<TEntity>(TEntity entity) where TEntity : class
+    {
+        return base.Entry(entity);
     }
 
     private async Task PublishDomainEventsAsync()

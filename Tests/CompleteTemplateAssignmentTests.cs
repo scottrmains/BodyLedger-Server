@@ -12,7 +12,7 @@ using SharedKernel;
 using Application.Abstractions.Data;
 using Domain.Workouts;
 using Domain.Assignments;
-using Domain.Checklist;
+using Domain.Checklists;
 
 namespace Tests
 {
