@@ -35,7 +35,7 @@ namespace Web.Api.Controllers
                        {
                            HttpOnly = true, // ✅ Prevents access via JavaScript
                            Secure = true, // ✅ Requires HTTPS
-                           SameSite = SameSiteMode.None, // Change to strict when in production
+                           SameSite = SameSiteMode.Lax, // Change to strict when in production
                            Expires = DateTime.UtcNow.AddDays(7) // ✅ Cookie expiration
                        };
 
