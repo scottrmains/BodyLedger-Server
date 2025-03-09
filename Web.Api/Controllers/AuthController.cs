@@ -34,11 +34,11 @@ namespace Web.Api.Controllers
                        var cookieOptions = new CookieOptions
                        {
                            HttpOnly = true, // ✅ Prevents access via JavaScript
-                           Secure = true, // ✅ Requires HTTPS
+                         //  Secure = true, // ✅ Requires HTTPS
                            SameSite = SameSiteMode.Lax, // Change to strict when in production
                            Expires = DateTime.UtcNow.AddDays(7) // ✅ Cookie expiration
                        };
-
+                       
                        Response.Cookies.Append("jwt", token, cookieOptions);
 
                        return Results.Ok(new { message = "Login successful" });
