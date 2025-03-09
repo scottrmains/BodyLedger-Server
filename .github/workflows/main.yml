@@ -40,7 +40,7 @@ jobs:
           key: ${{ secrets.DROPLET_SSH_KEY }}
           port: 22
           script: |
-            rm -rf /opt/trackspace/docker-compose.yml
+            rm -rf /opt/bodyledger/docker-compose.yml
 
       # Step 6: Copy docker-compose.yml to Droplet
       - name: Copy docker-compose.yml to Droplet
