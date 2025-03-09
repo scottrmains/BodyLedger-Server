@@ -33,10 +33,10 @@ namespace Web.Api.Controllers
                    {
                        var cookieOptions = new CookieOptions
                        {
-                           HttpOnly = true, // ✅ Prevents access via JavaScript
-                           Secure = true, // ✅ Requires HTTPS
-                           SameSite = SameSiteMode.None, // Change to strict when in production
-                           Expires = DateTime.UtcNow.AddDays(7) // ✅ Cookie expiration
+                           HttpOnly = true,
+                           Secure = false,
+                           SameSite = SameSiteMode.Lax,
+                           Expires = DateTime.UtcNow.AddDays(7)
                        };
 
                        Response.Cookies.Append("jwt", token, cookieOptions);
