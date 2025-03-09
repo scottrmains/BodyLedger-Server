@@ -30,8 +30,8 @@ WORKDIR /app
 COPY --from=build /app/publish .
 
 # Copy entrypoint and wait-for-it scripts
-COPY Trackspace.Api/entrypoint.sh .
-COPY Trackspace.Api/wait-for-it.sh .
+COPY Web.Api/entrypoint.sh .
+COPY Web.Api/wait-for-it.sh .
 RUN chmod +x ./entrypoint.sh ./wait-for-it.sh
 
 ENV ASPNETCORE_ENVIRONMENT=Production
