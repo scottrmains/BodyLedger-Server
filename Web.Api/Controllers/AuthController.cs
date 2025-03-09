@@ -1,16 +1,10 @@
 ﻿using Application.Users.Register;
-using Domain.Users;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SharedKernel;
-
-using System.Threading;
 using MediatR;
 using Web.Api.Extensions;
 using Web.Api.Infrastructure;
 using Application.Users.Login;
-using Microsoft.AspNetCore.Authorization;
-using System.Security.Claims;
 using Application.Users.GetById;
 using Application.Abstractions.Authentication;
 using Microsoft.Extensions.Caching.Memory;
@@ -41,7 +35,7 @@ namespace Web.Api.Controllers
                        {
                            HttpOnly = true, // ✅ Prevents access via JavaScript
                            Secure = true, // ✅ Requires HTTPS
-                           SameSite = SameSiteMode.Strict, // ✅ CSRF protection
+                           SameSite = SameSiteMode.None, // Change to strict when in production
                            Expires = DateTime.UtcNow.AddDays(7) // ✅ Cookie expiration
                        };
 
