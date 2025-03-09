@@ -12,7 +12,7 @@ services:
       - "8080:5000"
     environment:
       ASPNETCORE_ENVIRONMENT: "Production"
-      ConnectionStrings__PostgresConnection: "Host=159.89.82.142;Database=bodyledger;Username=postgres;Password=H&yjs)2AAbHR&6yF"
+      ConnectionStrings__PostgresConnection: "Host=db;Database=bodyledger;Username=postgres;Password=H&yjs)2AAbHR&6yF"
     networks:
       - bodyledger-network
     restart: always

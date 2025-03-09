@@ -23,15 +23,20 @@ using HealthChecks.UI.Client;
 
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
-            {
-                app.UseCors("Development");
-                app.UseSwaggerWithUi();
-                app.ApplyMigrations();
-            }
+                if (app.Environment.IsDevelopment())
+                {
+                    app.UseCors("Development");
+                    app.UseSwaggerWithUi();
+                    app.ApplyMigrations();
+                }
+                else
+                {
+                    app.UseCors("Development");
+                    app.UseSwaggerWithUi();
+                    app.ApplyMigrations();
+                }
 
-            app.MapHealthChecks("health", new HealthCheckOptions
+app.MapHealthChecks("health", new HealthCheckOptions
             {
                 ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
             });
