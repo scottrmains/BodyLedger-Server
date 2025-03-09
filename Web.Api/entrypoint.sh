@@ -5,4 +5,4 @@ set -e
 ./wait-for-it.sh db:5432 -t 30 -- echo "Database is up"
 
 echo "Starting the application..."
-exec dotnet Trackspace.Api.dll
+exec dotnet Web.Api.dll

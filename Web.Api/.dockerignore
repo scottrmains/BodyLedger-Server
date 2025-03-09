@@ -19,7 +19,7 @@ obj/
 *.swp
 
 # Ignore specific files that should not be included
-Trackspace.Api/.vs/
-Trackspace.Core/.vs/
-Trackspace.Data/.vs/
-Trackspace.Domain/.vs/
+Web.Api/.vs/
+Infrastructure/.vs/
+Domain/.vs/
+Application/.vs/
