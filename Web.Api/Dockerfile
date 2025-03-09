@@ -14,6 +14,7 @@ COPY Application/*.csproj Application/
 COPY Domain/*.csproj Domain/
 COPY Infrastructure/*.csproj Infrastructure/
 COPY SharedKernel/*.csproj SharedKernel/
+COPY Tests/*.csproj Tests/
 # Restore dependencies
 RUN dotnet restore BodyLedger.sln
 
