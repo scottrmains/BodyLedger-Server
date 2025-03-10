@@ -20,7 +20,7 @@ namespace Web.Api
             {
                 jsonTypeInfo.PolymorphismOptions = new JsonPolymorphismOptions
                 {
-                    TypeDiscriminatorPropertyName = "itemType",
+                    TypeDiscriminatorPropertyName = "templateType",
                     IgnoreUnrecognizedTypeDiscriminators = false,
                     UnknownDerivedTypeHandling = JsonUnknownDerivedTypeHandling.FailSerialization,
                     DerivedTypes =
@@ -35,7 +35,7 @@ namespace Web.Api
             {
                 jsonTypeInfo.PolymorphismOptions = new JsonPolymorphismOptions
                 {
-                    TypeDiscriminatorPropertyName = "$type",
+                    TypeDiscriminatorPropertyName = "templateType",
                     IgnoreUnrecognizedTypeDiscriminators = false,
                     UnknownDerivedTypeHandling = JsonUnknownDerivedTypeHandling.FailSerialization,
                     DerivedTypes =

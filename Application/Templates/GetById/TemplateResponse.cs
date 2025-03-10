@@ -10,10 +10,8 @@ public class TemplateResponse
     public Guid UserId { get; init; }
     public string Name { get; init; }
     public string Description { get; init; }
-    public TemplateType TemplateType { get; init; }
+    public string TemplateType { get; init; }
 
-    // Optional: Include a discriminator field for client-side type determination
-    public string Type => GetType().Name;
 }
 
 public class WorkoutTemplateResponse : TemplateResponse

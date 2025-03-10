@@ -27,7 +27,7 @@ namespace Application.Templates.Mapping
                     UserId = workout.UserId,
                     Name = workout.Name,
                     Description = workout.Description,
-                    TemplateType = TemplateType.Workout,
+                    TemplateType = TemplateType.Workout.ToString(),
                     Exercises = workoutExercises != null && workoutExercises.TryGetValue(workout.Id, out var exercises)
                         ? exercises.Select(MapWorkoutExercise).ToList()
                         : workout.Exercises?.Select(MapWorkoutExercise).ToList() ?? new List<WorkoutExerciseResponse>()
@@ -52,7 +52,6 @@ namespace Application.Templates.Mapping
                     UserId = template.UserId,
                     Name = template.Name,
                     Description = template.Description,
-                    TemplateType = TemplateType.Unknown
                 };
             }
         }
