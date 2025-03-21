@@ -41,8 +41,6 @@ namespace Web.Api.Controllers
             IUserContext user,
             CancellationToken cancellationToken)
         {
-            // You might need a factory here to determine the appropriate query
-            // Or use a unified GetTemplateByIdQuery that handles different template types
             var query = new GetTemplateByIdQuery(id, user.UserId);
             Result<TemplateResponse> result = await sender.Send(query, cancellationToken);
             return result.Match(Results.Ok, CustomResults.Problem);

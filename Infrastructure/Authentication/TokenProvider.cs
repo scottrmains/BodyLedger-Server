@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using Application.Abstractions.Authentication;
 using Domain.Users;
@@ -35,5 +36,18 @@ internal sealed class TokenProvider(IConfiguration configuration) : ITokenProvid
         string token = handler.CreateToken(tokenDescriptor);
 
         return token;
+    }
+
+    public string CreateRefreshToken()
+    {
+        var randomNumber = new byte[64];
+        using var rng = RandomNumberGenerator.Create();
+        rng.GetBytes(randomNumber);
+        return Convert.ToBase64String(randomNumber);
+    }
+
+    public DateTime GetRefreshTokenExpiryTime()
+    {
+        return DateTime.UtcNow.AddDays(configuration.GetValue<int>("Jwt:RefreshTokenExpirationInDays", 7));
     }
 }

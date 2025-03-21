@@ -10,28 +10,38 @@ namespace Application.Users.Login;
 internal sealed class LoginUserCommandHandler(
     IApplicationDbContext context,
     IPasswordHasher passwordHasher,
-    ITokenProvider tokenProvider) : ICommandHandler<LoginUserCommand, string>
+    ITokenProvider tokenProvider) : ICommandHandler<LoginUserCommand, LoginResponse>
 {
-    public async Task<Result<string>> Handle(LoginUserCommand command, CancellationToken cancellationToken)
+    public async Task<Result<LoginResponse>> Handle(LoginUserCommand command, CancellationToken cancellationToken)
     {
         User? user = await context.Users
-            .AsNoTracking()
             .SingleOrDefaultAsync(u => u.Email == command.Email, cancellationToken);
 
         if (user is null)
         {
-            return Result.Failure<string>(UserErrors.NotFoundByEmail);
+            return Result.Failure<LoginResponse>(UserErrors.NotFoundByEmail);
         }
 
         bool verified = passwordHasher.Verify(command.Password, user.PasswordHash);
 
         if (!verified)
         {
-            return Result.Failure<string>(UserErrors.NotFoundByEmail);
+            return Result.Failure<LoginResponse>(UserErrors.NotFoundByEmail);
         }
 
-        string token = tokenProvider.Create(user);
+        string accessToken = tokenProvider.Create(user);
+        string refreshToken = tokenProvider.CreateRefreshToken();
+        DateTime refreshTokenExpiryTime = tokenProvider.GetRefreshTokenExpiryTime();
 
-        return token;
+        // Update user with new refresh token
+        user.SetRefreshToken(refreshToken, refreshTokenExpiryTime);
+        await context.SaveChangesAsync(cancellationToken);
+
+        // Return both tokens from the handler
+        return Result.Success(new LoginResponse(
+            AccessToken: accessToken,
+            RefreshToken: refreshToken,
+            RefreshTokenExpiryTime: refreshTokenExpiryTime
+        ));
     }
 }
