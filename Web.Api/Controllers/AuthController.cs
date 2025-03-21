@@ -56,29 +56,6 @@ namespace Web.Api.Controllers
             );
         }
 
-        [HttpPost("refresh")]
-        public async Task<IResult> RefreshToken(ISender sender, CancellationToken cancellationToken)
-        {
-            // Get refresh token from cookie
-            string? refreshToken = Request.Cookies["refreshToken"];
-
-            if (string.IsNullOrEmpty(refreshToken))
-            {
-                return Results.Unauthorized();
-            }
-
-            var command = new RefreshTokenCommand(refreshToken);
-            Result<string> result = await sender.Send(command, cancellationToken);
-
-            if (result.IsFailure)
-            {
-                return CustomResults.Problem(result);
-            }
-
-            // Return just the new token
-            return Results.Ok(new { token = result.Value });
-        }
-
         [HttpPost("register")]
         public async Task<IResult> Register(RegisterRequest request, ISender sender, CancellationToken cancellationToken)
         {
@@ -94,30 +71,49 @@ namespace Web.Api.Controllers
         }
 
         [HttpGet("me")]
-        public async Task<IResult> GetAuthenticatedUser(ISender sender, IUserContext user, IMemoryCache cache, CancellationToken cancellationToken)
+        public async Task<IResult> GetAuthOrRefresh(ISender sender, IUserContext user, IMemoryCache cache, CancellationToken cancellationToken)
         {
-            if (!User.Identity.IsAuthenticated)
+            // If user is authenticated, return user data
+            if (User.Identity.IsAuthenticated)
+            {
+                if (!cache.TryGetValue($"user:{user.UserId}", out UserResponse? cachedUser))
+                {
+                    var command = new GetUserByIdQuery(user.UserId);
+                    Result<UserResponse> result = await sender.Send(command, cancellationToken);
+
+                    if (result.IsFailure)
+                    {
+                        return CustomResults.Problem(result);
+                    }
+
+                    cachedUser = result.Value;
+                    cache.Set($"user:{user.UserId}", cachedUser, TimeSpan.FromMinutes(5));
+                }
+
+                return Results.Ok(new { user = cachedUser });
+            }
+
+            string? refreshToken = Request.Cookies["refreshToken"];
+            if (string.IsNullOrEmpty(refreshToken))
             {
                 return Results.Unauthorized();
             }
 
-            if (!cache.TryGetValue($"user:{user.UserId}", out UserResponse? cachedUser))
+            var refreshCommand = new RefreshTokenCommand(refreshToken);
+            Result<RefreshTokenWithUserResponse> refreshResult = await sender.Send(refreshCommand, cancellationToken);
+
+            if (refreshResult.IsFailure)
             {
-                var command = new GetUserByIdQuery(user.UserId);
-                Result<UserResponse> result = await sender.Send(command, cancellationToken);
-
-                if (result.IsFailure)
-                {
-                    return CustomResults.Problem(result);
-                }
-
-                cachedUser = result.Value;
-                cache.Set($"user:{user.UserId}", cachedUser, TimeSpan.FromMinutes(5));
+                return CustomResults.Problem(refreshResult);
             }
 
-            return Results.Ok(cachedUser);
+            // Return both the new token and user data
+            return Results.Ok(new
+            {
+                token = refreshResult.Value.AccessToken,
+                user = refreshResult.Value.User
+            });
         }
-
         [HttpPost("logout")]
         public async Task<IResult> Logout(ISender sender, IUserContext user, CancellationToken cancellationToken)
         {
