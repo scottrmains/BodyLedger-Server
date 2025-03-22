@@ -5,11 +5,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Domain.Workouts
+namespace Domain.Templates
 {
-    public class WorkoutExercise : Entity
+    public class WorkoutActivity : Entity
     {
-        public string ExerciseName { get; set; }
+        public string ActivityName { get; set; }
         public int RecommendedSets { get; set; }
         public string RepRanges { get; set; } 
         public Guid WorkoutTemplateId { get; set; }

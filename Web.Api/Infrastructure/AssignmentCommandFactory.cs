@@ -2,6 +2,7 @@
 using Domain.Templates;
 using MediatR;
 using SharedKernel;
+using System;
 
 namespace Web.Api.Infrastructure
 {
@@ -24,13 +25,12 @@ namespace Web.Api.Infrastructure
                     scheduledDay,
                     isRecurring),
 
-
-        //        TemplateType.Meal => new ScheduleMealAssignmentCommand(
-        //userId,
-        //checklistId,
-        //templateId,
-        //scheduledDay,
-        //isRecurring),
+                TemplateType.Fitness => new ScheduleFitnessAssignmentCommand(
+                    userId,
+                    checklistId,
+                    templateId,
+                    scheduledDay,
+                    isRecurring),
 
                 _ => throw new ArgumentException($"Unsupported template type: {templateType}")
             };

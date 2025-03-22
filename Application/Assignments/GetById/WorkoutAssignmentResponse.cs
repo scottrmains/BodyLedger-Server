@@ -9,15 +9,15 @@ namespace Application.Assignments.GetById
 {
     public class WorkoutAssignmentResponse : AssignmentResponse
     {
-        public List<WorkoutExerciseAssignmentResponse> ExerciseItems { get; set; } = new();
+        public List<WorkoutActivityAssignmentResponse> ActivityItems { get; set; } = new();
 
         public override string Type => "Workout";
     }
 
-    public class WorkoutExerciseAssignmentResponse 
+    public class WorkoutActivityAssignmentResponse 
     {
         public Guid Id { get; set; }
-        public string ExerciseName { get; set; }
+        public string ActivityName { get; set; }
         public int RecommendedSets { get; set; }
         public string RepRanges { get; set; }
         public bool Completed { get; set; }

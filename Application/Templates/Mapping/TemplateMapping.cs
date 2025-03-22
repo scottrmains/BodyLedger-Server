@@ -1,25 +1,26 @@
 ﻿
 using Application.Templates.GetById;
 using Domain.Templates;
-using Domain.Workouts;
+using Domain.Templates.Fitness;
+
 
 namespace Application.Templates.Mapping
     {
         public class TemplateMapper
         {
-            public TemplateResponse MapTemplateToResponse(Template template, Dictionary<Guid, List<WorkoutExercise>> workoutExercises = null)
+            public TemplateResponse MapTemplateToResponse(Template template, Dictionary<Guid, List<WorkoutActivity>> workoutActivities = null, Dictionary<Guid, List<FitnessActivity>> fitnessActivities = null)
             {
                 return template switch
                 {
-                    WorkoutTemplate workout => MapWorkoutTemplate(workout, workoutExercises),
-
+                    WorkoutTemplate workout => MapWorkoutTemplate(workout, workoutActivities),
+                    FitnessTemplate fitness => MapFitnessTemplate(fitness, fitnessActivities),
                     _ => MapBaseTemplate(template)
                 };
             }
 
             public WorkoutTemplateResponse MapWorkoutTemplate(
                 WorkoutTemplate workout,
-                Dictionary<Guid, List<WorkoutExercise>> workoutExercises)
+                Dictionary<Guid, List<WorkoutActivity>> workoutActivities)
             {
                 return new WorkoutTemplateResponse
                 {
@@ -28,23 +29,51 @@ namespace Application.Templates.Mapping
                     Name = workout.Name,
                     Description = workout.Description,
                     TemplateType = TemplateType.Workout.ToString(),
-                    Exercises = workoutExercises != null && workoutExercises.TryGetValue(workout.Id, out var exercises)
-                        ? exercises.Select(MapWorkoutExercise).ToList()
-                        : workout.Exercises?.Select(MapWorkoutExercise).ToList() ?? new List<WorkoutExerciseResponse>()
+                    Activities = workoutActivities != null && workoutActivities.TryGetValue(workout.Id, out var activities)
+                        ? activities.Select(MapWorkoutActivity).ToList()
+                        : workout.Activities?.Select(MapWorkoutActivity).ToList() ?? new List<WorkoutActivityResponse>()
                 };
             }
 
-            public WorkoutExerciseResponse MapWorkoutExercise(WorkoutExercise exercise)
-            {
-                return new WorkoutExerciseResponse
+
+        public FitnessTemplateResponse MapFitnessTemplate(
+              FitnessTemplate fitness,
+              Dictionary<Guid, List<FitnessActivity>> fitnessActivities)
                 {
-                    ExerciseName = exercise.ExerciseName,
-                    RecommendedSets = exercise.RecommendedSets,
-                    RepRanges = exercise.RepRanges
+                    return new FitnessTemplateResponse
+                    {
+                        Id = fitness.Id,
+                        UserId = fitness.UserId,
+                        Name = fitness.Name,
+                        Description = fitness.Description,
+                        TemplateType = TemplateType.Fitness.ToString(),
+                        Activities = fitnessActivities != null && fitnessActivities.TryGetValue(fitness.Id, out var activities)
+                            ? activities.Select(MapFitnessActivity).ToList()
+                            : fitness.Activities?.Select(MapFitnessActivity).ToList() ?? new List<FitnessActivityResponse>()
+                    };
+                }
+
+        public WorkoutActivityResponse MapWorkoutActivity(WorkoutActivity activity)
+            {
+                return new WorkoutActivityResponse
+                {
+                    ActivityName = activity.ActivityName,
+                    RecommendedSets = activity.RecommendedSets,
+                    RepRanges = activity.RepRanges
                 };
             }
 
-            public TemplateResponse MapBaseTemplate(Template template)
+
+        public FitnessActivityResponse MapFitnessActivity(FitnessActivity activity)
+        {
+            return new FitnessActivityResponse
+            {
+                ActivityName = activity.ActivityName,
+                IntensityLevel = activity.IntensityLevel,
+                RecommendedDuration = activity.RecommendedDuration
+            };
+        }
+        public TemplateResponse MapBaseTemplate(Template template)
             {
                 return new TemplateResponse
                 {

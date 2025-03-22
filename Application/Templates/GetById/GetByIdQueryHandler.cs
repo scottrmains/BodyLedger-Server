@@ -1,57 +1,67 @@
 ﻿using Application.Abstractions.Data;
 using Application.Abstractions.Messaging;
+using Application.Abstractions.Authentication;
+using Application.Templates.Mapping;
+using Domain.Templates;
+using Domain.Users;
 using Microsoft.EntityFrameworkCore;
 using SharedKernel;
-using Domain.Templates;
-using Application.Abstractions.Authentication;
-using Domain.Users;
-using Microsoft.Extensions.Caching.Memory;
-using Domain.Workouts;
-using Application.Templates.Mapping;
+using Domain.Templates.Fitness;
 
-namespace Application.Templates.GetById;
-
-internal sealed class GetTemplateByIdQueryHandler(
-    IApplicationDbContext context,
-    IUserContext userContext, TemplateMapper mapper)
-    : IQueryHandler<GetTemplateByIdQuery, TemplateResponse>
+namespace Application.Templates.GetById
 {
-    public async Task<Result<TemplateResponse>> Handle(GetTemplateByIdQuery query, CancellationToken cancellationToken)
+    internal sealed class GetTemplateByIdQueryHandler(
+        IApplicationDbContext context,
+        IUserContext userContext,
+        TemplateMapper mapper)
+        : IQueryHandler<GetTemplateByIdQuery, TemplateResponse>
     {
-        if (query.UserId != userContext.UserId)
+        public async Task<Result<TemplateResponse>> Handle(GetTemplateByIdQuery query, CancellationToken cancellationToken)
         {
-            return Result.Failure<TemplateResponse>(UserErrors.Unauthorized());
-        }
-
-        // Query the base Templates table to get any template type
-        var template = await context.Templates
-            .Where(t => t.UserId == query.UserId && t.Id == query.Id)
-            .FirstOrDefaultAsync(cancellationToken);
-
-        if (template is null)
-        {
-            return Result.Failure<TemplateResponse>(TemplateErrors.TemplateNotFound(query.Id));
-        }
-
-        // Load related data based on template type
-        Dictionary<Guid, List<WorkoutExercise>> workoutExercises = null;
-
-        if (template is WorkoutTemplate)
-        {
-            var exercises = await context.WorkoutExercises
-                .Where(e => e.WorkoutTemplateId == template.Id)
-                .ToListAsync(cancellationToken);
-
-            workoutExercises = new Dictionary<Guid, List<WorkoutExercise>>
+            if (query.UserId != userContext.UserId)
             {
-                { template.Id, exercises }
-            };
+                return Result.Failure<TemplateResponse>(UserErrors.Unauthorized());
+            }
+
+            // Query the base Templates table to get any template type
+            var template = await context.Templates
+                .Where(t => t.UserId == query.UserId && t.Id == query.Id)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (template is null)
+            {
+                return Result.Failure<TemplateResponse>(TemplateErrors.TemplateNotFound(query.Id));
+            }
+
+            // Load related data based on template type
+            Dictionary<Guid, List<WorkoutActivity>> workoutActivities = null;
+            Dictionary<Guid, List<FitnessActivity>> fitnessActivities = null;
+
+            if (template is WorkoutTemplate)
+            {
+                var activities = await context.WorkoutActivities
+                    .Where(e => e.WorkoutTemplateId == template.Id)
+                    .ToListAsync(cancellationToken);
+
+                workoutActivities = new Dictionary<Guid, List<WorkoutActivity>>
+                {
+                    { template.Id, activities }
+                };
+            }
+            else if (template is FitnessTemplate)
+            {
+                var activities = await context.FitnessActivities
+                    .Where(e => e.FitnessTemplateId == template.Id)
+                    .ToListAsync(cancellationToken);
+
+                fitnessActivities = new Dictionary<Guid, List<FitnessActivity>>
+                {
+                    { template.Id, activities }
+                };
+            }
+
+            // Use the mapper to create the response
+            return Result.Success(mapper.MapTemplateToResponse(template, workoutActivities, fitnessActivities));
         }
-
-        // Use the mapper to create the response
-        return Result.Success(mapper.MapTemplateToResponse(template, workoutExercises));
-   
     }
-
-
 }

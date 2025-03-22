@@ -1,15 +1,14 @@
 ﻿using Domain.Assignments;
-using Domain.Workouts;
-using SharedKernel;
-using System;
+using Domain.Templates;
+
 
 namespace Domain.TemplateAssignments
 {
  
-    public class WorkoutExerciseAssignment : AssignmentItem
+    public class WorkoutActivityAssignment : AssignmentItem
     {
-        public Guid WorkoutExerciseId { get; set; }
-        public WorkoutExercise WorkoutExercise { get; set; }
+        public Guid WorkoutActivityId { get; set; }
+        public WorkoutActivity WorkoutActivity { get; set; }
         public int? CompletedSets { get; set; }
         public int? CompletedReps { get; set; }
         public int? ActualWeight { get; set; }

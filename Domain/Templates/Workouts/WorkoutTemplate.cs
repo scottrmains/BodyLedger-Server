@@ -5,17 +5,17 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Domain.Workouts
+namespace Domain.Templates
 {
     public class WorkoutTemplate : Template
     {
         public WorkoutTemplate()
         {
             Type = TemplateType.Workout;
-            Exercises = new List<WorkoutExercise>();
+            Activities = new List<WorkoutActivity>();
         }
 
-        public ICollection<WorkoutExercise> Exercises { get; set; }
+        public ICollection<WorkoutActivity> Activities { get; set; }
 
     }
 }

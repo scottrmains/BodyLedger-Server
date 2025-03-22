@@ -1,17 +1,9 @@
 ﻿
-using Domain.Templates;
-using Domain.Workouts;
 using Infrastructure.Database;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
-using Xunit;
-using FluentAssertions;
-using SharedKernel;
-using Application.Abstractions.Data;
-using Tests;
-using Application.Abstractions.Services;
 
-using Domain.Checklists;
+using Microsoft.EntityFrameworkCore;
+using Application.Abstractions.Data;
+using Application.Abstractions.Services;
 
 namespace Tests
 {

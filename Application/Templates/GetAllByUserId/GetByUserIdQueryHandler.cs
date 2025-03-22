@@ -2,12 +2,11 @@
 using Application.Abstractions.Data;
 using Application.Abstractions.Messaging;
 using Application.Templates.GetAllByUserId;
-using Application.Templates.GetById;
 using Application.Templates.Mapping;
 using Application.Workouts.GetAllByUserId;
 using Domain.Templates;
+using Domain.Templates.Fitness;
 using Domain.Users;
-using Domain.Workouts;
 using Microsoft.EntityFrameworkCore;
 using SharedKernel;
 
@@ -46,14 +45,14 @@ namespace Application.Templates.GetByUserId
                 .ToListAsync(cancellationToken);
 
             // Load related data only for template types that need it
-            Dictionary<Guid, List<WorkoutExercise>> workoutExercises = new();
-
+            Dictionary<Guid, List<WorkoutActivity>> workoutActivities = new();
+            Dictionary<Guid, List<FitnessActivity>> fitnessActivities = new();
             // Only load workout exercises if we have workout templates
             var workoutTemplates = templates.OfType<WorkoutTemplate>().ToList();
             if (workoutTemplates.Any())
             {
                 var workoutIds = workoutTemplates.Select(w => w.Id).ToList();
-                workoutExercises = await context.WorkoutExercises
+                workoutActivities = await context.WorkoutActivities
                     .Where(e => workoutIds.Contains(e.WorkoutTemplateId))
                     .GroupBy(e => e.WorkoutTemplateId)
                     .ToDictionaryAsync(
@@ -62,9 +61,23 @@ namespace Application.Templates.GetByUserId
                         cancellationToken);
             }
 
+            var fitnessTemplates = templates.OfType<FitnessTemplate>().ToList();
+
+            if (fitnessTemplates.Any())
+            {
+                var fitnessIds = fitnessTemplates.Select(w => w.Id).ToList();
+                fitnessActivities = await context.FitnessActivities
+                    .Where(e => fitnessIds.Contains(e.FitnessTemplateId))
+                    .GroupBy(e => e.FitnessTemplateId)
+                    .ToDictionaryAsync(
+                        g => g.Key,
+                        g => g.ToList(),
+                        cancellationToken);
+            }
+
             // Map templates to response objects
             var templateResponses = templates
-                .Select(t => mapper.MapTemplateToResponse(t, workoutExercises))
+                .Select(t => mapper.MapTemplateToResponse(t, workoutActivities, fitnessActivities))
                 .ToList();
 
             // Create paginated response

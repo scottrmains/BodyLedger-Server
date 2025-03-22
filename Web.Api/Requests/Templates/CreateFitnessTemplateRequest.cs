@@ -1,22 +1,24 @@
 ﻿using Application.Templates.Create;
-using Application.Workouts.Create;
 using MediatR;
 using SharedKernel;
-using System.Xml.Linq;
+using System.Collections.Generic;
 
 namespace Web.Api.Requests.Templates
 {
-    public class CreateWorkoutTemplateRequest : CreateTemplateRequest
+    public class CreateFitnessTemplateRequest : CreateTemplateRequest
     {
-        public List<WorkoutActivityRequest> Exercises { get; set; }
+        public List<FitnessActivityRequest> Activities { get; set; }
 
         public override IRequest<Result<Guid>> CreateCommand(Guid userId)
         {
-            return new CreateWorkoutTemplateCommand(
+
+            return new CreateFitnessTemplateCommand(
                 Name,
                 Description,
-                Exercises,
+                Activities,
                 userId);
         }
     }
+
+
 }

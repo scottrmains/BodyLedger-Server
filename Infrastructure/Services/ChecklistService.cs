@@ -7,7 +7,8 @@ using Application.Helpers;
 using Domain.Assignments;
 using Domain.Checklists;
 using Domain.TemplateAssignments;
-using Domain.Workouts;
+using Domain.Templates;
+using Domain.Templates.Fitness;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Services;
@@ -170,17 +171,25 @@ public class ChecklistService : IChecklistService
         if (checklistEntity == null)
             return null;
 
-        // Get all assignment IDs to fetch exercise assignments
         var assignmentIds = checklistEntity.Assignments.Select(a => a.Id).ToList();
 
-        // Load workout exercise assignments
-        var exerciseAssignments = await context.WorkoutExerciseAssignments
+        // Load workout activity assignments
+        var workoutActivityAssignments = await context.WorkoutActivityAssignments
             .Where(e => assignmentIds.Contains(e.TemplateAssignmentId))
-            .Include(e => e.WorkoutExercise)
+            .Include(e => e.WorkoutActivity)
             .ToListAsync(cancellationToken);
 
-        // Group exercise assignments by assignment ID
-        var exerciseAssignmentsByAssignment = exerciseAssignments
+        var fitnessActivityAssignments = await context.FitnessActivityAssignments
+            .Where(e => assignmentIds.Contains(e.TemplateAssignmentId))
+            .Include(e => e.FitnessExercise)
+            .ToListAsync(cancellationToken);
+
+        // Group activity assignments by assignment ID
+        var workoutActivityByAssignment = workoutActivityAssignments
+            .GroupBy(e => e.TemplateAssignmentId)
+            .ToDictionary(g => g.Key, g => g.ToList());
+
+        var fitnessActivitiesByAssignment = fitnessActivityAssignments
             .GroupBy(e => e.TemplateAssignmentId)
             .ToDictionary(g => g.Key, g => g.ToList());
 
@@ -190,14 +199,16 @@ public class ChecklistService : IChecklistService
 
         // Use mapper to create properly typed responses
         var assignments = _mapper.MapAssignmentsToResponses(
-                            checklistEntity.Assignments,
-                            exerciseAssignmentsByAssignment);
+                     checklistEntity.Assignments,
+                     workoutActivityByAssignment,
+                     fitnessActivitiesByAssignment);
 
         assignments = assignments.OrderBy(x => {
             var day = Enum.Parse<DayOfWeek>(x.ScheduledDay);
             var startDay = checklistEntity.StartDay;
             return ((int)day - (int)startDay + 7) % 7;
         }).ToList();
+
         // Map the TemplateChecklist entity to ChecklistResponse DTO
         var response = new ChecklistResponse
         {
@@ -319,7 +330,7 @@ public class ChecklistService : IChecklistService
 
         // Create new assignments
         var newAssignments = new List<Assignment>();
-        var exerciseAssignments = new List<object>(); // Replace with your exercise assignment type
+
 
         foreach (var assignment in assignmentGroups)
         {
@@ -352,32 +363,49 @@ public class ChecklistService : IChecklistService
             context.Assignments.AddRange(newAssignments);
             await context.SaveChangesAsync(cancellationToken);
 
-            // For each assignment, get its exercises and create assignment items
+
             foreach (var newAssignment in newAssignments)
             {
-                // Get template details including exercises
+  
                 if (newAssignment.Template is WorkoutTemplate workoutTemplate)
                 {
-                    var exercises = await context.WorkoutExercises
+                    var activities = await context.WorkoutActivities
                         .Where(e => e.WorkoutTemplateId == workoutTemplate.Id)
                         .ToListAsync(cancellationToken);
 
-                    // Create exercise assignments
-                    foreach (var exercise in exercises)
+        
+                    foreach (var activity in activities)
                     {
-                        var exerciseAssignment = new WorkoutExerciseAssignment
+                        var activityAssignment = new WorkoutActivityAssignment
                         {
                             TemplateAssignmentId = newAssignment.Id,
-                            WorkoutExerciseId = exercise.Id
+                            WorkoutActivityId = activity.Id
                         };
 
-                        context.WorkoutExerciseAssignments.Add(exerciseAssignment);
+                        context.WorkoutActivityAssignments.Add(activityAssignment);
                     }
                 }
-                // Handle other template types if needed
+                else if (newAssignment.Template is FitnessTemplate fitnessTemplate)
+                {
+                    var activities = await context.FitnessActivities
+                        .Where(e => e.FitnessTemplateId == fitnessTemplate.Id)
+                        .ToListAsync(cancellationToken);
+
+                    foreach (var activity in activities)
+                    {
+                        var activityAssignment = new FitnessActivityAssignment
+                        {
+                            TemplateAssignmentId = newAssignment.Id,
+                            FitnessActivityId = activity.Id
+                        };
+
+                        context.FitnessActivityAssignments.Add(activityAssignment);
+                    }
+                }
+                // Handle other template types as needed
             }
 
-            // Save all exercise assignments
+    
             await context.SaveChangesAsync(cancellationToken);
         }
     }

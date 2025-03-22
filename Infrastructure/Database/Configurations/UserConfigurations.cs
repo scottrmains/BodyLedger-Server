@@ -1,5 +1,4 @@
-﻿using Domain.Templates;
-using Domain.Workouts;
+﻿
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore;
 

@@ -2,11 +2,6 @@
 using Application.Checklists.GetByUserId;
 using Domain.Assignments;
 using Domain.TemplateAssignments;
-using Domain.Templates;
-using Domain.Workouts;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Application.Assignments.Mapping
 {
@@ -14,18 +9,21 @@ namespace Application.Assignments.Mapping
     {
         public AssignmentResponse MapAssignmentToResponse(
             Assignment assignment,
-            List<WorkoutExerciseAssignment>? workoutExerciseAssignments = null)
+            List<WorkoutActivityAssignment> workoutActivityAssignments = null,
+            List<FitnessActivityAssignment> fitnessActivityAssignments = null)
         {
             // First, create a base assignment response with common properties
             var baseResponse = MapBaseAssignment(assignment);
 
-            // Then, if this is a workout assignment, create and return a specialized response
-            if (workoutExerciseAssignments != null && workoutExerciseAssignments.Any())
+            // Then, based on template type, create a specialized response
+            if (workoutActivityAssignments != null && workoutActivityAssignments.Any())
             {
-                return CreateWorkoutResponse(baseResponse, workoutExerciseAssignments);
+                return CreateWorkoutResponse(baseResponse, workoutActivityAssignments);
             }
-
-            // For other assignment types, add similar checks here
+            else if (fitnessActivityAssignments != null && fitnessActivityAssignments.Any())
+            {
+                return CreateFitnessResponse(baseResponse, fitnessActivityAssignments);
+            }
 
             // If no specific type is found, return the base response
             return baseResponse;
@@ -52,7 +50,7 @@ namespace Application.Assignments.Mapping
 
         private WorkoutAssignmentResponse CreateWorkoutResponse(
             AssignmentResponse baseResponse,
-            List<WorkoutExerciseAssignment> workoutExerciseAssignments)
+            List<WorkoutActivityAssignment> workoutActivityAssignments)
         {
             var workoutResponse = new WorkoutAssignmentResponse
             {
@@ -68,20 +66,44 @@ namespace Application.Assignments.Mapping
                 RecurringStartDate = baseResponse.RecurringStartDate,
                 ItemsCount = baseResponse.ItemsCount,
                 CompletedItemsCount = baseResponse.CompletedItemsCount,
-                ExerciseItems = workoutExerciseAssignments.Select(MapWorkoutExerciseAssignment).ToList()
+                ActivityItems = workoutActivityAssignments.Select(MapWorkoutExerciseAssignment).ToList()
             };
 
             return workoutResponse;
         }
 
-        public WorkoutExerciseAssignmentResponse MapWorkoutExerciseAssignment(WorkoutExerciseAssignment assignment)
+        private FitnessAssignmentResponse CreateFitnessResponse(
+            AssignmentResponse baseResponse,
+            List<FitnessActivityAssignment> fitnessExerciseAssignments)
         {
-            return new WorkoutExerciseAssignmentResponse
+            var fitnessResponse = new FitnessAssignmentResponse
+            {
+                Id = baseResponse.Id,
+                TemplateId = baseResponse.TemplateId,
+                TemplateName = baseResponse.TemplateName,
+                ScheduledDay = baseResponse.ScheduledDay,
+                TimeOfDay = baseResponse.TimeOfDay,
+                Completed = baseResponse.Completed,
+                CompletedDate = baseResponse.CompletedDate,
+                ChecklistId = baseResponse.ChecklistId,
+                IsRecurring = baseResponse.IsRecurring,
+                RecurringStartDate = baseResponse.RecurringStartDate,
+                ItemsCount = baseResponse.ItemsCount,
+                CompletedItemsCount = baseResponse.CompletedItemsCount,
+                ActivityItems = fitnessExerciseAssignments.Select(MapFitnessExerciseAssignment).ToList()
+            };
+
+            return fitnessResponse;
+        }
+
+        public WorkoutActivityAssignmentResponse MapWorkoutExerciseAssignment(WorkoutActivityAssignment assignment)
+        {
+            return new WorkoutActivityAssignmentResponse
             {
                 Id = assignment.Id,
-                ExerciseName = assignment.WorkoutExercise?.ExerciseName ?? "Unknown Exercise",
-                RecommendedSets = assignment.WorkoutExercise?.RecommendedSets ?? 0,
-                RepRanges = assignment.WorkoutExercise?.RepRanges ?? "0",
+                ActivityName = assignment.WorkoutActivity?.ActivityName ?? "Unknown Activity",
+                RecommendedSets = assignment.WorkoutActivity?.RecommendedSets ?? 0,
+                RepRanges = assignment.WorkoutActivity?.RepRanges ?? "0",
                 Completed = assignment.Completed,
                 CompletedDate = assignment.CompletedDate,
                 CompletedSets = assignment.CompletedSets,
@@ -90,17 +112,34 @@ namespace Application.Assignments.Mapping
             };
         }
 
+        public FitnessActivityAssignmentResponse MapFitnessExerciseAssignment(FitnessActivityAssignment assignment)
+        {
+            return new FitnessActivityAssignmentResponse
+            {
+                Id = assignment.Id,
+                ActivityName = assignment.FitnessExercise?.ActivityName ?? "Unknown Activity",
+                RecommendedDuration = assignment.FitnessExercise?.RecommendedDuration ?? 0,
+                IntensityLevel = assignment.FitnessExercise?.IntensityLevel ?? "Unknown",
+                Completed = assignment.Completed,
+                CompletedDate = assignment.CompletedDate,
+                CompletedDuration = assignment.CompletedDuration,
+                ActualIntensity = assignment.ActualIntensity
+            };
+        }
+
         public List<AssignmentResponse> MapAssignmentsToResponses(
                 IEnumerable<Assignment> assignments,
-                Dictionary<Guid, List<WorkoutExerciseAssignment>> exerciseAssignmentsByAssignment)
+                Dictionary<Guid, List<WorkoutActivityAssignment>> workoutActivitiesByAssignment,
+                Dictionary<Guid, List<FitnessActivityAssignment>> fitnessActivitiesByAssignment = null)
         {
             return assignments.Select(a =>
             {
-                // Get exercise assignments for this specific assignment if they exist
-                exerciseAssignmentsByAssignment.TryGetValue(a.Id, out var exerciseAssignments);
+                // Get activity assignments for this specific assignment if they exist
+                workoutActivitiesByAssignment.TryGetValue(a.Id, out var workoutActivities);
+                fitnessActivitiesByAssignment.TryGetValue(a.Id, out var fitnessActivities);
 
                 // Map using existing method
-                return MapAssignmentToResponse(a, exerciseAssignments);
+                return MapAssignmentToResponse(a, workoutActivities ?? new List<WorkoutActivityAssignment>(), fitnessActivities ?? new List<FitnessActivityAssignment>());
             }).ToList();
         }
     }

@@ -1,12 +1,7 @@
 ﻿using Domain.Templates;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Domain.Workouts;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Domain.Templates.Fitness;
 
 namespace Infrastructure.Database.Configurations
 {
@@ -14,54 +9,75 @@ namespace Infrastructure.Database.Configurations
     {
         public void Configure(EntityTypeBuilder<Template> builder)
         {
-
-            builder.ToTable("templates"); 
-
+            builder.ToTable("templates");
             builder.HasKey(t => t.Id);
-
             builder.Property(t => t.Name)
                 .IsRequired()
                 .HasMaxLength(200);
 
-    
             builder.HasDiscriminator<string>("template_type")
-                .HasValue<WorkoutTemplate>("workout");
-
+                .HasValue<WorkoutTemplate>("workout")
+                .HasValue<FitnessTemplate>("fitness");
         }
+    }
 
-        public class WorkoutTemplateConfiguration : IEntityTypeConfiguration<WorkoutTemplate>
+    public class WorkoutTemplateConfiguration : IEntityTypeConfiguration<WorkoutTemplate>
+    {
+        public void Configure(EntityTypeBuilder<WorkoutTemplate> builder)
         {
-            public void Configure(EntityTypeBuilder<WorkoutTemplate> builder)
-            {
+            builder.HasBaseType<Template>();
 
-                builder.HasBaseType<Template>();
-
-                builder.HasMany(wt => wt.Exercises)
-                    .WithOne(e => e.WorkoutTemplate)
-                    .HasForeignKey(e => e.WorkoutTemplateId)
-                    .IsRequired();
-            }
+            builder.HasMany(wt => wt.Activities)
+                .WithOne(e => e.WorkoutTemplate)
+                .HasForeignKey(e => e.WorkoutTemplateId)
+                .IsRequired();
         }
+    }
 
-        public class WorkoutExerciseConfiguration : IEntityTypeConfiguration<WorkoutExercise>
+    public class FitnessTemplateConfiguration : IEntityTypeConfiguration<FitnessTemplate>
+    {
+        public void Configure(EntityTypeBuilder<FitnessTemplate> builder)
         {
-            public void Configure(EntityTypeBuilder<WorkoutExercise> builder)
-            {
-                builder.ToTable("workout_exercises");
+            builder.HasBaseType<Template>();
 
-                builder.HasKey(e => e.Id);
+            builder.HasMany(ft => ft.Activities)
+                .WithOne(e => e.FitnessTemplate)
+                .HasForeignKey(e => e.FitnessTemplateId)
+                .IsRequired();
+        }
+    }
 
-                builder.Property(e => e.ExerciseName)
-                    .IsRequired()
-                    .HasMaxLength(100);
+    public class WorkoutExerciseConfiguration : IEntityTypeConfiguration<WorkoutActivity>
+    {
+        public void Configure(EntityTypeBuilder<WorkoutActivity> builder)
+        {
+            builder.ToTable("workout_activities");
+            builder.HasKey(e => e.Id);
+            builder.Property(e => e.ActivityName)
+                .IsRequired()
+                .HasMaxLength(100);
+            builder.Property(e => e.RecommendedSets)
+                .IsRequired();
+            builder.Property(e => e.RepRanges)
+                .IsRequired()
+                .HasMaxLength(50);
+        }
+    }
 
-                builder.Property(e => e.RecommendedSets)
-                    .IsRequired();
-
-                builder.Property(e => e.RepRanges)
-                    .IsRequired()
-                    .HasMaxLength(50);
-            }
+    public class FitnessExerciseConfiguration : IEntityTypeConfiguration<FitnessActivity>
+    {
+        public void Configure(EntityTypeBuilder<FitnessActivity> builder)
+        {
+            builder.ToTable("fitness_activities");
+            builder.HasKey(e => e.Id);
+            builder.Property(e => e.ActivityName)
+                .IsRequired()
+                .HasMaxLength(100);
+            builder.Property(e => e.RecommendedDuration)
+                .IsRequired();
+            builder.Property(e => e.IntensityLevel)
+                .IsRequired()
+                .HasMaxLength(50);
         }
     }
 }

@@ -1,4 +1,6 @@
 ﻿using Application.Abstractions.Authentication;
+using Application.Templates.Delete;
+using Application.Templates.Generate;
 using Application.Templates.GetAllByUserId;
 using Application.Templates.GetById;
 using Application.Templates.GetOptionsByUserId;
@@ -71,5 +73,30 @@ namespace Web.Api.Controllers
             return result.Match(Results.Ok, CustomResults.Problem);
         }
 
+
+        [HttpDelete("{id}/delete")]
+        public async Task<IResult> DeleteTemplate(Guid id, ISender sender, IUserContext user, CancellationToken cancellationToken)
+        {
+            var query = new DeleteTemplateCommand(id);
+            Result<Result> result = await sender.Send(query, cancellationToken);
+            return result.Match(Results.Ok, CustomResults.Problem);
+        }
+
+
+        [HttpPost("generate")]
+        public async Task<IResult> GenerateWorkout(
+             [FromBody] GenerateWorkoutRequest request,
+             ISender sender,
+             IUserContext user,
+             CancellationToken cancellationToken)
+        {
+            var command = new GenerateWorkoutTemplateCommand(
+                request.Name,
+                request.Description,
+                user.UserId);
+
+            Result<WorkoutTemplateResponse> result = await sender.Send(command, cancellationToken);
+            return result.Match(Results.Ok, CustomResults.Problem);
+        }
     }
 }

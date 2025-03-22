@@ -3,8 +3,9 @@ using Domain.Assignments;
 using Domain.Checklists;
 using Domain.TemplateAssignments;
 using Domain.Templates;
+using Domain.Templates.Fitness;
 using Domain.Users;
-using Domain.Workouts;
+
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
@@ -16,14 +17,25 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
     : DbContext(options), IApplicationDbContext
 {
     public DbSet<User> Users { get; set; }
-    public DbSet<Template> Templates { get; set; } 
+    public DbSet<UserProfile> UserProfiles { get; set; }
+
+    // Templates
+    public DbSet<Template> Templates { get; set; }
     public DbSet<WorkoutTemplate> WorkoutTemplates { get; set; }
-    public DbSet<WorkoutExercise> WorkoutExercises { get; set; }
+    public DbSet<FitnessTemplate> FitnessTemplates { get; set; }
+
+    // Activities
+    public DbSet<WorkoutActivity> WorkoutActivities { get; set; }
+    public DbSet<FitnessActivity> FitnessActivities { get; set; }
+
+    // Assignments
     public DbSet<Assignment> Assignments { get; set; }
     public DbSet<AssignmentItem> AssignmentItems { get; set; }
+    public DbSet<WorkoutActivityAssignment> WorkoutActivityAssignments { get; set; }
+    public DbSet<FitnessActivityAssignment> FitnessActivityAssignments { get; set; }
+
+    // Checklists
     public DbSet<Checklist> Checklists { get; set; }
-    public  DbSet<UserProfile> UserProfiles { get; set; }
-    public DbSet<WorkoutExerciseAssignment> WorkoutExerciseAssignments { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
 

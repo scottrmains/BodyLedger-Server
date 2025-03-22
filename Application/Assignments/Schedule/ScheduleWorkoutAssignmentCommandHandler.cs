@@ -1,15 +1,11 @@
 ﻿using Application.Abstractions.Data;
 using Application.Abstractions.Messaging;
 using Application.Abstractions.Services;
-using Application.Helpers;
 using Domain.Assignments;
 using Domain.TemplateAssignments;
 using Domain.Templates;
-using Domain.Users;
-using Domain.Workouts;
 using Microsoft.EntityFrameworkCore;
 using SharedKernel;
-
 namespace Application.Assignments.Schedule;
 
 internal sealed class ScheduleWorkoutAssignmentCommandHandler(IApplicationDbContext context, IChecklistService checklistService)
@@ -28,7 +24,7 @@ internal sealed class ScheduleWorkoutAssignmentCommandHandler(IApplicationDbCont
 
         // Verify the workout template exists
         var workoutTemplate = await context.WorkoutTemplates
-            .Include(wt => wt.Exercises)
+            .Include(wt => wt.Activities)
             .FirstOrDefaultAsync(t => t.Id == command.WorkoutTemplateId, cancellationToken);
 
         if (workoutTemplate == null)
@@ -67,17 +63,16 @@ internal sealed class ScheduleWorkoutAssignmentCommandHandler(IApplicationDbCont
         context.Assignments.Add(assignment);
         await context.SaveChangesAsync(cancellationToken); 
 
-        // Create workout exercise assignments for each exercise in the template
-        foreach (var exercise in workoutTemplate.Exercises)
+        foreach (var activity in workoutTemplate.Activities)
         {
-            var workoutExerciseAssignment = new WorkoutExerciseAssignment
+            var workoutActivityAssignment = new WorkoutActivityAssignment
             {
                 TemplateAssignmentId = assignment.Id,
-                WorkoutExerciseId = exercise.Id,
-                WorkoutExercise = exercise
+                WorkoutActivityId = activity.Id,
+                WorkoutActivity = activity
             };
 
-            context.WorkoutExerciseAssignments.Add(workoutExerciseAssignment);
+            context.WorkoutActivityAssignments.Add(workoutActivityAssignment);
         }
 
         await context.SaveChangesAsync(cancellationToken);

@@ -46,13 +46,13 @@ internal sealed class GetAssignmentByIdQueryHandler(
         var assignmentItemIds = assignment.Items.Select(i => i.Id).ToList();
 
         // Load specific assignment item types
-        var workoutExerciseAssignments = await context.WorkoutExerciseAssignments
+        var workoutActivityAssignments = await context.WorkoutActivityAssignments
             .Where(w => assignmentItemIds.Contains(w.Id))
-            .Include(w => w.WorkoutExercise)
+            .Include(w => w.WorkoutActivity)
             .ToListAsync(cancellationToken);
 
         // Use the mapper to create the response
-        return Result.Success(mapper.MapAssignmentToResponse(assignment, workoutExerciseAssignments));
+        return Result.Success(mapper.MapAssignmentToResponse(assignment, workoutActivityAssignments));
 
     }
 

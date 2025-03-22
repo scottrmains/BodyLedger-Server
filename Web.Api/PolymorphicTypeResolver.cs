@@ -14,8 +14,6 @@ namespace Web.Api
         public override JsonTypeInfo GetTypeInfo(Type type, JsonSerializerOptions options)
         {
             JsonTypeInfo jsonTypeInfo = base.GetTypeInfo(type, options);
-
-            // Set up polymorphic deserialization for CompleteItemRequest
             if (type == typeof(CompleteItemRequest))
             {
                 jsonTypeInfo.PolymorphismOptions = new JsonPolymorphismOptions
@@ -26,7 +24,7 @@ namespace Web.Api
                     DerivedTypes =
                     {
                     new JsonDerivedType(typeof(CompleteWorkoutItemRequest), "Workout"),
-                    // Add other types as needed
+                    new JsonDerivedType(typeof(CompleteFitnessItemRequest), "Fitness"),
                 }
                 };
             }
@@ -41,12 +39,10 @@ namespace Web.Api
                     DerivedTypes =
                 {
                     new JsonDerivedType(typeof(Requests.Templates.CreateWorkoutTemplateRequest), "Workout"),
-
+                    new JsonDerivedType(typeof(Requests.Templates.CreateFitnessTemplateRequest), "Fitness"),
                 }
                 };
             }
-
-
 
             if (jsonTypeInfo.Type == typeof(AssignmentResponse))
             {
@@ -57,7 +53,7 @@ namespace Web.Api
                     DerivedTypes =
             {
                 new JsonDerivedType(typeof(WorkoutAssignmentResponse), "Workout"),
-                // Add other derived types here as needed
+                new JsonDerivedType(typeof(FitnessAssignmentResponse), "Fitness"),
             }
                 };
             }

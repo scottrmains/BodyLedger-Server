@@ -13,7 +13,7 @@ namespace Application.AssignmentItems.Complete;
         {
 
 
-        var workoutItem = await context.WorkoutExerciseAssignments
+        var workoutItem = await context.WorkoutActivityAssignments
                         .FirstOrDefaultAsync(w => w.Id == command.ItemId, cancellationToken);
 
         if (workoutItem is null)
@@ -27,7 +27,7 @@ namespace Application.AssignmentItems.Complete;
             //error
         }
 
-        // Mark the workout exercise as completed with the specified metrics
+        // Mark the workout activity as completed with the specified metrics
         workoutItem.MarkCompleted(
             sets: command.Sets,
             reps: command.Reps,

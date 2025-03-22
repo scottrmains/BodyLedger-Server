@@ -1,7 +1,4 @@
-﻿using Domain.Templates;
-using Domain.Workouts;
-using SharedKernel;
-
+﻿
 namespace Application.Templates.GetById;
 
 public class TemplateResponse
@@ -16,14 +13,26 @@ public class TemplateResponse
 
 public class WorkoutTemplateResponse : TemplateResponse
 {
-    public List<WorkoutExerciseResponse> Exercises { get; init; } = new();
+    public List<WorkoutActivityResponse> Activities { get; init; } = new();
+}
+
+public class FitnessTemplateResponse : TemplateResponse
+{
+    public List<FitnessActivityResponse> Activities { get; init; } = new();
 }
 
 
-public sealed class WorkoutExerciseResponse
+public sealed class WorkoutActivityResponse
 {
-    public string ExerciseName { get; init; }
+    public string ActivityName { get; init; }
     public int RecommendedSets { get; init; }
     public string RepRanges { get; init; }
 }
 
+
+public sealed class FitnessActivityResponse
+{
+    public string ActivityName { get; init; }
+    public int RecommendedDuration { get; init; }
+    public string IntensityLevel { get; init; }
+}
