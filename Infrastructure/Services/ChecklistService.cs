@@ -9,8 +9,10 @@ using Domain.Checklists;
 using Domain.TemplateAssignments;
 using Domain.Templates;
 using Domain.Templates.Fitness;
+using Infrastructure.Database.Migrations;
 using Microsoft.EntityFrameworkCore;
 using SharedKernel.Responses;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Infrastructure.Services;
 
@@ -201,6 +203,14 @@ public class ChecklistService : IChecklistService
             return ((int)day - (int)startDay + 7) % 7;
         }).ToList();
 
+       var dateRanges = await GetAvailableDateRanges(userId, cancellationToken);
+
+        var oldestValidDate = today.AddDays(-90); 
+        var minDate = dateRanges.Count > 0
+            ? dateRanges.Min(d => d.StartDate)
+            : oldestValidDate;
+        var maxDate = today.AddDays(12 * 7);
+
         // Map the TemplateChecklist entity to ChecklistResponse DTO
         var response = new ChecklistResponse
         {
@@ -211,7 +221,13 @@ public class ChecklistService : IChecklistService
             IsComplete = checklistEntity.IsComplete,
             StartDay = checklistEntity.StartDay,
             IsCurrent = isCurrent,
-            Assignments = assignments
+            Assignments = assignments,
+            DateRanges = dateRanges,
+            CalendarBounds = new CalendarBounds
+            {
+                MinDate = minDate,
+                MaxDate = maxDate
+            }
         };
 
         return response;

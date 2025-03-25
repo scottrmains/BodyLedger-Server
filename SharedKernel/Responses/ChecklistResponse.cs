@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 namespace SharedKernel.Responses
 {
 
-
     public sealed class ChecklistResponse
     {
         public Guid Id { get; init; }
@@ -18,6 +17,8 @@ namespace SharedKernel.Responses
         public bool IsComplete { get; init; }
         public bool IsCurrent { get; init; }
         public List<AssignmentResponse> Assignments { get; init; } = new();
+        public List<DateRangeInfo>? DateRanges { get; set; } = new();
+        public CalendarBounds? CalendarBounds { get; set; }
     }
 
 }
