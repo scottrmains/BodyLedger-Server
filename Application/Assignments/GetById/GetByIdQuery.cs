@@ -1,5 +1,5 @@
 ﻿using Application.Abstractions.Messaging;
-using Application.Checklists.GetByUserId;
+using SharedKernel.Responses;
 
 
 namespace Application.Assignments.GetById;

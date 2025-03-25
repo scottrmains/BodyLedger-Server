@@ -4,6 +4,7 @@ using Application.Abstractions.Messaging;
 using Domain.Users;
 using Microsoft.EntityFrameworkCore;
 using SharedKernel;
+using SharedKernel.Responses;
 
 namespace Application.Templates.GetOptionsByUserId;
 
@@ -26,7 +27,7 @@ internal sealed class GetTemplateOptionsByUserIdQueryHandler(
             {
                 Id = x.Id,
                 Name = x.Name,
-                Type = x.Type
+                Type = (int)x.Type
             })
             .ToListAsync(cancellationToken);
 

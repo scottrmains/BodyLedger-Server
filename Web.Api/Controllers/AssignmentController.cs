@@ -4,12 +4,10 @@ using Application.Assignments.Delete;
 using Application.Assignments.GetById;
 using Application.Assignments.SetRecurring;
 using Application.Assignments.Undo;
-using Application.Checklists.GetByUserId;
-using Application.Templates.GetOptionsByUserId;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using SharedKernel;
-
+using SharedKernel.Responses;
 using Web.Api.Extensions;
 using Web.Api.Infrastructure;
 using Web.Api.Requests.Assignments;

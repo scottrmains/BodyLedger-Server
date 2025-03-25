@@ -1,5 +1,6 @@
-﻿using Application.Templates.GetById;
+﻿
 using SharedKernel;
+using SharedKernel.Responses;
 
 namespace Application.Workouts.GetAllByUserId;
 

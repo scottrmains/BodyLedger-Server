@@ -1,6 +1,9 @@
-﻿using Application.Abstractions.Data;
+﻿using Application.Abstractions.Authentication;
+using Application.Abstractions.Data;
 using Application.Abstractions.Messaging;
+using Domain.Assignments;
 using Domain.Templates;
+using Domain.Users;
 using Microsoft.EntityFrameworkCore;
 using SharedKernel;
 
@@ -22,8 +25,13 @@ namespace Application.Assignments.Complete;
             }
 
             assignment.MarkCompleted();
+            assignment.Raise(new AssignmentCompletedDomainEvent(assignment.Id));
+
+
             await context.SaveChangesAsync(cancellationToken); 
-            return Result.Success();
+
+  
+        return Result.Success();
         }
     }
 

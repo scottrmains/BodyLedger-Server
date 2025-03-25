@@ -7,6 +7,7 @@ using Domain.Users;
 using Microsoft.EntityFrameworkCore;
 using SharedKernel;
 using Domain.Templates.Fitness;
+using SharedKernel.Responses;
 
 namespace Application.Templates.GetById
 {

@@ -26,8 +26,10 @@ internal sealed class RegisterUserCommandHandler(IApplicationDbContext context, 
         };
 
         user.Raise(new UserRegisteredDomainEvent(user.Id));
-
+        
         context.Users.Add(user);
+
+
 
         await context.SaveChangesAsync(cancellationToken);
 

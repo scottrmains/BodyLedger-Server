@@ -1,17 +1,14 @@
-﻿using Application.Checklists.GetByUserId;
-using System;
-using System.Collections.Generic;
+﻿
+namespace SharedKernel.Responses;
 
-namespace Application.Assignments.GetById
-{
-    public class FitnessAssignmentResponse : AssignmentResponse
+    public sealed class FitnessAssignmentResponse : AssignmentResponse
     {
-        public List<FitnessActivityAssignmentResponse> ActivityItems { get; set; } = new();
+        public List<FitnessActivityAssignmentResponse> ActivityItems { get; init; } = new();
 
         public override string Type => "Fitness";
     }
 
-    public class FitnessActivityAssignmentResponse
+    public sealed class FitnessActivityAssignmentResponse
     {
         public Guid Id { get; set; }
         public string ActivityName { get; set; }
@@ -22,4 +19,3 @@ namespace Application.Assignments.GetById
         public int? CompletedDuration { get; set; }
         public string ActualIntensity { get; set; }
     }
-}

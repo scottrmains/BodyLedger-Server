@@ -5,10 +5,8 @@ using SharedKernel;
 using Domain.Templates;
 using Application.Abstractions.Authentication;
 using Domain.Users;
-
-using Application.Templates.Mapping;
-using Application.Checklists.GetByUserId;
 using Application.Assignments.Mapping;
+using SharedKernel.Responses;
 
 namespace Application.Assignments.GetById;
 
@@ -51,8 +49,13 @@ internal sealed class GetAssignmentByIdQueryHandler(
             .Include(w => w.WorkoutActivity)
             .ToListAsync(cancellationToken);
 
+        var fitnessActivityAssignments = await context.FitnessActivityAssignments
+         .Where(w => assignmentItemIds.Contains(w.Id))
+         .Include(w => w.FitnessExercise)
+         .ToListAsync(cancellationToken);
+
         // Use the mapper to create the response
-        return Result.Success(mapper.MapAssignmentToResponse(assignment, workoutActivityAssignments));
+        return Result.Success(mapper.MapAssignmentToResponse(assignment, workoutActivityAssignments, fitnessActivityAssignments));
 
     }
 

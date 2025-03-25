@@ -1,5 +1,4 @@
 ﻿using Application.Abstractions.Authentication;
-using Application.TemplateChecklists.Create;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

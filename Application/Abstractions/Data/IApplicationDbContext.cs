@@ -7,6 +7,7 @@ using Domain.Users;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Domain.Templates.Fitness;
+using Domain.Notifications;
 
 namespace Application.Abstractions.Data
 {
@@ -32,6 +33,8 @@ namespace Application.Abstractions.Data
 
         // Checklists
         DbSet<Checklist> Checklists { get; }
+
+        DbSet<Notification> Notifications { get; }
 
         EntityEntry<TEntity> Entry<TEntity>(TEntity entity) where TEntity : class;
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);

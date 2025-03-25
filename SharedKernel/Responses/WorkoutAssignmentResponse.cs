@@ -1,13 +1,7 @@
-﻿using Application.Checklists.GetByUserId;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿
 
-namespace Application.Assignments.GetById
-{
-    public class WorkoutAssignmentResponse : AssignmentResponse
+namespace SharedKernel.Responses;
+public class WorkoutAssignmentResponse : AssignmentResponse
     {
         public List<WorkoutActivityAssignmentResponse> ActivityItems { get; set; } = new();
 
@@ -27,4 +21,4 @@ namespace Application.Assignments.GetById
         public int? ActualWeight { get; set; }
 
     }
-}
+

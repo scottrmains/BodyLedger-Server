@@ -1,6 +1,7 @@
 ﻿using Application.Abstractions.Data;
 using Domain.Assignments;
 using Domain.Checklists;
+using Domain.Notifications;
 using Domain.TemplateAssignments;
 using Domain.Templates;
 using Domain.Templates.Fitness;
@@ -36,6 +37,9 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
 
     // Checklists
     public DbSet<Checklist> Checklists { get; set; }
+
+
+    public DbSet<Notification> Notifications { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
 

@@ -2,6 +2,7 @@
 using Application.Templates.GetById;
 using Domain.Templates;
 using Domain.Templates.Fitness;
+using SharedKernel.Responses;
 
 
 namespace Application.Templates.Mapping
@@ -28,7 +29,7 @@ namespace Application.Templates.Mapping
                     UserId = workout.UserId,
                     Name = workout.Name,
                     Description = workout.Description,
-                    TemplateType = TemplateType.Workout.ToString(),
+                    TemplateType = (int)TemplateType.Workout,
                     Activities = workoutActivities != null && workoutActivities.TryGetValue(workout.Id, out var activities)
                         ? activities.Select(MapWorkoutActivity).ToList()
                         : workout.Activities?.Select(MapWorkoutActivity).ToList() ?? new List<WorkoutActivityResponse>()
@@ -46,7 +47,7 @@ namespace Application.Templates.Mapping
                         UserId = fitness.UserId,
                         Name = fitness.Name,
                         Description = fitness.Description,
-                        TemplateType = TemplateType.Fitness.ToString(),
+                        TemplateType = (int)TemplateType.Fitness,
                         Activities = fitnessActivities != null && fitnessActivities.TryGetValue(fitness.Id, out var activities)
                             ? activities.Select(MapFitnessActivity).ToList()
                             : fitness.Activities?.Select(MapFitnessActivity).ToList() ?? new List<FitnessActivityResponse>()

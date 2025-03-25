@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 
 namespace Application.AssignmentItems.Complete;
 
-internal sealed class AssignmentItemCompleteDomainEventHandler : INotificationHandler<AssignmentCompletedDomainEvent>
+internal sealed class AssignmentItemCompleteDomainEventHandler : INotificationHandler<AssignmentItemCompletedDomainEvent>
 {
-    public Task Handle(AssignmentCompletedDomainEvent notification, CancellationToken cancellationToken)
+    public Task Handle(AssignmentItemCompletedDomainEvent notification, CancellationToken cancellationToken)
     {
         // TODO: Send an email verification link, etc.
         return Task.CompletedTask;

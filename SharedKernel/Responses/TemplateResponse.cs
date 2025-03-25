@@ -1,22 +1,22 @@
 ﻿
-namespace Application.Templates.GetById;
+namespace SharedKernel.Responses;
 
-public class TemplateResponse
+public  class TemplateResponse
 {
     public Guid Id { get; init; }
     public Guid UserId { get; init; }
     public string Name { get; init; }
     public string Description { get; init; }
-    public string TemplateType { get; init; }
+    public int TemplateType { get; init; }
 
 }
 
-public class WorkoutTemplateResponse : TemplateResponse
+public sealed class WorkoutTemplateResponse : TemplateResponse
 {
     public List<WorkoutActivityResponse> Activities { get; init; } = new();
 }
 
-public class FitnessTemplateResponse : TemplateResponse
+public sealed class FitnessTemplateResponse : TemplateResponse
 {
     public List<FitnessActivityResponse> Activities { get; init; } = new();
 }

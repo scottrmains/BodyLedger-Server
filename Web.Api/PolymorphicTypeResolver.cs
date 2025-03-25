@@ -6,6 +6,8 @@ using Web.Api.Requests.AssignmentItems;
 using Application.Assignments.GetById;
 using Application.Checklists.GetByUserId;
 using System.Reflection;
+using SharedKernel.Responses;
+using Domain.Templates;
 
 namespace Web.Api
 {
@@ -23,8 +25,8 @@ namespace Web.Api
                     UnknownDerivedTypeHandling = JsonUnknownDerivedTypeHandling.FailSerialization,
                     DerivedTypes =
                     {
-                    new JsonDerivedType(typeof(CompleteWorkoutItemRequest), "Workout"),
-                    new JsonDerivedType(typeof(CompleteFitnessItemRequest), "Fitness"),
+                    new JsonDerivedType(typeof(CompleteWorkoutItemRequest), (int)TemplateType.Workout),
+                    new JsonDerivedType(typeof(CompleteFitnessItemRequest), (int)TemplateType.Fitness),
                 }
                 };
             }
@@ -38,8 +40,8 @@ namespace Web.Api
                     UnknownDerivedTypeHandling = JsonUnknownDerivedTypeHandling.FailSerialization,
                     DerivedTypes =
                 {
-                    new JsonDerivedType(typeof(Requests.Templates.CreateWorkoutTemplateRequest), "Workout"),
-                    new JsonDerivedType(typeof(Requests.Templates.CreateFitnessTemplateRequest), "Fitness"),
+                    new JsonDerivedType(typeof(Requests.Templates.CreateWorkoutTemplateRequest), (int)TemplateType.Workout),
+                    new JsonDerivedType(typeof(Requests.Templates.CreateFitnessTemplateRequest), (int)TemplateType.Fitness),
                 }
                 };
             }
@@ -51,10 +53,10 @@ namespace Web.Api
                     IgnoreUnrecognizedTypeDiscriminators = true,
                     UnknownDerivedTypeHandling = JsonUnknownDerivedTypeHandling.FallBackToBaseType,
                     DerivedTypes =
-            {
-                new JsonDerivedType(typeof(WorkoutAssignmentResponse), "Workout"),
-                new JsonDerivedType(typeof(FitnessAssignmentResponse), "Fitness"),
-            }
+                    {
+                        new JsonDerivedType(typeof(WorkoutAssignmentResponse), (int)TemplateType.Workout),
+                        new JsonDerivedType(typeof(FitnessAssignmentResponse), (int)TemplateType.Fitness),
+                    }
                 };
             }
 

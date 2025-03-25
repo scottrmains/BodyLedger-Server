@@ -10,6 +10,7 @@ using Domain.TemplateAssignments;
 using Domain.Templates;
 using Domain.Templates.Fitness;
 using Microsoft.EntityFrameworkCore;
+using SharedKernel.Responses;
 
 namespace Infrastructure.Services;
 

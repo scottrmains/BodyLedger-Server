@@ -2,6 +2,7 @@
 using Application.Checklists.GetByUserId;
 using Domain.Assignments;
 using Domain.TemplateAssignments;
+using SharedKernel.Responses;
 
 namespace Application.Assignments.Mapping
 {
