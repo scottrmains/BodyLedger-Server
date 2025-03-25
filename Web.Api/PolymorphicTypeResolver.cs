@@ -26,8 +26,8 @@ namespace Web.Api
                     UnknownDerivedTypeHandling = JsonUnknownDerivedTypeHandling.FailSerialization,
                     DerivedTypes =
                     {
-                    new JsonDerivedType(typeof(CompleteWorkoutItemRequest), TemplateType.Workout.ToString()),
-                    new JsonDerivedType(typeof(CompleteFitnessItemRequest), TemplateType.Fitness.ToString()),
+                    new JsonDerivedType(typeof(CompleteWorkoutItemRequest), (int)TemplateType.Workout),
+                    new JsonDerivedType(typeof(CompleteFitnessItemRequest), (int)TemplateType.Fitness),
                 }
                 };
             }
@@ -41,8 +41,8 @@ namespace Web.Api
                     UnknownDerivedTypeHandling = JsonUnknownDerivedTypeHandling.FailSerialization,
                     DerivedTypes =
                 {
-                    new JsonDerivedType(typeof(Requests.Templates.CreateWorkoutTemplateRequest), TemplateType.Workout.ToString()),
-                    new JsonDerivedType(typeof(Requests.Templates.CreateFitnessTemplateRequest), TemplateType.Fitness.ToString()),
+                    new JsonDerivedType(typeof(Requests.Templates.CreateWorkoutTemplateRequest), (int)TemplateType.Workout),
+                    new JsonDerivedType(typeof(Requests.Templates.CreateFitnessTemplateRequest), (int)TemplateType.Fitness),
                 }
                 };
             }
@@ -55,8 +55,8 @@ namespace Web.Api
                     UnknownDerivedTypeHandling = JsonUnknownDerivedTypeHandling.FallBackToBaseType,
                     DerivedTypes =
                     {
-                        new JsonDerivedType(typeof(WorkoutAssignmentResponse), TemplateType.Workout.ToString()),
-                        new JsonDerivedType(typeof(FitnessAssignmentResponse), TemplateType.Fitness.ToString()),
+                        new JsonDerivedType(typeof(WorkoutAssignmentResponse), (int)TemplateType.Workout),
+                        new JsonDerivedType(typeof(FitnessAssignmentResponse), (int)TemplateType.Fitness),
                     }
                 };
             }
