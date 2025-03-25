@@ -17,7 +17,7 @@ namespace SharedKernel.Responses;
         public int CompletedItemsCount { get; set; }
 
         // Type discriminator for clients
-        public virtual string Type => "Assignment";
+        public virtual TemplateType Type => TemplateType.Unknown;
     }
 
     public sealed class AssignmentItemResponse

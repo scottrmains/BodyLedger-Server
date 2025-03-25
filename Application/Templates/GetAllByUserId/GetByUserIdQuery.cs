@@ -1,6 +1,7 @@
 ﻿using Application.Abstractions.Messaging;
 using Application.Workouts.GetAllByUserId;
 using Domain.Templates;
+using SharedKernel;
 
 
 namespace Application.Templates.GetAllByUserId;

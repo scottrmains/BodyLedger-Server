@@ -5,7 +5,7 @@ public class WorkoutAssignmentResponse : AssignmentResponse
     {
         public List<WorkoutActivityAssignmentResponse> ActivityItems { get; set; } = new();
 
-        public override string Type => "Workout";
+        public override TemplateType Type => TemplateType.Workout;
     }
 
     public class WorkoutActivityAssignmentResponse 

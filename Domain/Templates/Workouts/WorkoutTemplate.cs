@@ -1,4 +1,5 @@
 ﻿using Domain.Templates;
+using SharedKernel;
 using System;
 using System.Collections.Generic;
 using System.Linq;

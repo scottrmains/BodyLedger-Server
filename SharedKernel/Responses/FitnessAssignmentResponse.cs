@@ -5,7 +5,7 @@ namespace SharedKernel.Responses;
     {
         public List<FitnessActivityAssignmentResponse> ActivityItems { get; init; } = new();
 
-        public override string Type => "Fitness";
+        public override TemplateType Type => TemplateType.Fitness;
     }
 
     public sealed class FitnessActivityAssignmentResponse
