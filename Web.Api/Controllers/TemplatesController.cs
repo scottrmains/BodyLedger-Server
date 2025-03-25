@@ -9,6 +9,7 @@ using MediatR;
 
 using Microsoft.AspNetCore.Mvc;
 using SharedKernel;
+using System.Collections.Generic;
 using Web.Api.Extensions;
 using Web.Api.Infrastructure;
 using Web.Api.Requests.Templates;
@@ -95,7 +96,8 @@ namespace Web.Api.Controllers
                 request.Description,
                 user.UserId);
 
-            Result<WorkoutTemplateResponse> result = await sender.Send(command, cancellationToken);
+            Result<List<WorkoutActivityResponse>> result = await sender.Send(command, cancellationToken);
+
             return result.Match(Results.Ok, CustomResults.Problem);
         }
     }

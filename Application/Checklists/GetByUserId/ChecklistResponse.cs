@@ -7,9 +7,7 @@ namespace Application.Checklists.GetByUserId;
 
 public sealed class ChecklistsResponse
 {
-    public ChecklistResponse CurrentChecklist { get; set; }
-    public ChecklistResponse PreviousChecklist { get; set; }
-    public ChecklistResponse FutureChecklist { get; set; }
+    public ChecklistResponse Checklist { get; set; }
     public List<DateRangeInfo> DateRanges { get; set; } = new();
     public CalendarBounds CalendarBounds { get; set; }
 }

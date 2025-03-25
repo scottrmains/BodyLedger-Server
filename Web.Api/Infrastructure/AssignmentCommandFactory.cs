@@ -1,4 +1,5 @@
 ﻿using Application.Assignments.Schedule;
+using Domain.Assignments;
 using Domain.Templates;
 using MediatR;
 using SharedKernel;
@@ -11,25 +12,28 @@ namespace Web.Api.Infrastructure
         public static IRequest<Result<Guid>> CreateScheduleCommand(
             TemplateType templateType,
             Guid userId,
-            Guid checklistId,
+            DateTime selectedDate,
             Guid templateId,
             DayOfWeek scheduledDay,
+            TimeOfDay timeOfDay,
             bool isRecurring)
         {
             return templateType switch
             {
                 TemplateType.Workout => new ScheduleWorkoutAssignmentCommand(
                     userId,
-                    checklistId,
+                    selectedDate,
                     templateId,
                     scheduledDay,
+                    timeOfDay,
                     isRecurring),
 
                 TemplateType.Fitness => new ScheduleFitnessAssignmentCommand(
                     userId,
-                    checklistId,
+                    selectedDate,
                     templateId,
                     scheduledDay,
+                    timeOfDay,
                     isRecurring),
 
                 _ => throw new ArgumentException($"Unsupported template type: {templateType}")

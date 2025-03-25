@@ -6,15 +6,6 @@ namespace Application.Abstractions.Services
 {
     public interface IChecklistService
     {
-        /// <summary>
-        /// Creates a checklist for the next week if it doesn't exist and copies recurring assignments.
-        /// </summary>
-        Task<Checklist> InitiateNextChecklist(Checklist existingChecklist, CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Creates the initial checklist for a user starting from the most recent Monday.
-        /// </summary>
-        Task<Checklist> InitiateFirstChecklist(Guid userId, CancellationToken cancellationToken);
 
       
         /// <summary>
@@ -32,12 +23,17 @@ namespace Application.Abstractions.Services
             DayOfWeek defaultStartDay,
             CancellationToken cancellationToken);
 
-        /// <summary>
-        /// Adds recurring assignments to a checklist for the next week.
-        /// </summary>
-        Task<Checklist> EnsureChecklistForWeekWithRecurringAssignments(
-         Guid userId,
-         DateTime targetDate,
-         CancellationToken cancellationToken);
+            /// <summary>
+            /// Adds recurring assignments to a checklist for the next week.
+            /// </summary>
+            Task<Checklist> EnsureChecklistForWeekWithRecurringAssignments(
+             Guid userId,
+             DateTime targetDate,
+             CancellationToken cancellationToken);
+
+            Task<Checklist> CreateChecklistForDateAsync(
+            Guid userId,
+            DateTime referenceDate,
+            CancellationToken cancellationToken);
     }
 }

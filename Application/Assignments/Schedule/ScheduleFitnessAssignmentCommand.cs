@@ -1,12 +1,14 @@
 ﻿using Application.Abstractions.Messaging;
+using Domain.Assignments;
 using System;
 
 namespace Application.Assignments.Schedule
 {
     public record ScheduleFitnessAssignmentCommand(
         Guid UserId,
-        Guid ChecklistId,
+        DateTime SelectedDate,
         Guid FitnessTemplateId,
         DayOfWeek ScheduledDay,
+        TimeOfDay TimeOfDay,
         bool IsRecurring = false) : ICommand<Guid>;
 }

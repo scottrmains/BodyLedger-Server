@@ -40,9 +40,10 @@ namespace Web.Api.Controllers
             var command = AssignmentCommandFactory.CreateScheduleCommand(
                         request.TemplateType,
                         user.UserId,
-                        request.ChecklistId,
+                        request.SelectedDate,
                         request.TemplateId,
                         request.ScheduledDay,
+                        request.TimeOfDay,
                         request.IsRecurring
                     );
 

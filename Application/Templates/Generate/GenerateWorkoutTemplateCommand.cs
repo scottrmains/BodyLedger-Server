@@ -11,5 +11,5 @@ namespace Application.Templates.Generate
     public sealed record GenerateWorkoutTemplateCommand(
       string Name,
       string Description,
-      Guid UserId) : ICommand<WorkoutTemplateResponse>;
+      Guid UserId) : ICommand<List<WorkoutActivityResponse>>;
 }

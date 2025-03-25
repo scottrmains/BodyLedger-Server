@@ -2,16 +2,19 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Application.Abstractions.Services
 {
-    public interface IDeepseekService
+    public interface IAiService
     {
-        Task<List<GeneratedExercise>> GenerateWorkoutExercises(
-            string workoutName,
-            string description,
-            CancellationToken cancellationToken);
+        Task<TResult> GenerateContent<TResult>(
+             string prompt,
+             JsonSerializerOptions? jsonOptions = null,
+             double temperature = 0.7,
+             int maxOutputTokens = 8192,
+             CancellationToken cancellationToken = default);
     }
 
 

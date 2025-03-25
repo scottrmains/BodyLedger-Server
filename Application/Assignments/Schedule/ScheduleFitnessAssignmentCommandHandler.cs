@@ -1,6 +1,7 @@
 ﻿using Application.Abstractions.Data;
 using Application.Abstractions.Messaging;
 using Application.Abstractions.Services;
+using Application.Helpers;
 using Domain.Assignments;
 using Domain.Templates;
 using Microsoft.EntityFrameworkCore;
@@ -13,13 +14,7 @@ namespace Application.Assignments.Schedule
     {
         public async Task<Result<System.Guid>> Handle(ScheduleFitnessAssignmentCommand command, CancellationToken cancellationToken)
         {
-            var checklist = await context.Checklists
-                .FirstOrDefaultAsync(c => c.Id == command.ChecklistId && c.UserId == command.UserId, cancellationToken);
-
-            if (checklist == null)
-            {
-                return Result.Failure<System.Guid>(TemplateErrors.TemplateChecklistNotFound(command.ChecklistId));
-            }
+            var checklist = await checklistService.CreateChecklistForDateAsync(command.UserId, command.SelectedDate, cancellationToken);
 
             // Verify the fitness template exists
             var fitnessTemplate = await context.FitnessTemplates

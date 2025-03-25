@@ -1,6 +1,7 @@
 ﻿using Application.Abstractions.Data;
 using Application.Abstractions.Messaging;
 using Application.Abstractions.Services;
+using Application.Helpers;
 using Domain.Assignments;
 using Domain.TemplateAssignments;
 using Domain.Templates;
@@ -13,14 +14,7 @@ internal sealed class ScheduleWorkoutAssignmentCommandHandler(IApplicationDbCont
 {
     public async Task<Result<Guid>> Handle(ScheduleWorkoutAssignmentCommand command, CancellationToken cancellationToken)
     {
-
-        var checklist = await context.Checklists
-           .FirstOrDefaultAsync(c => c.Id == command.ChecklistId && c.UserId == command.UserId, cancellationToken);
-
-        if (checklist == null)
-        {
-            return Result.Failure<Guid>(TemplateErrors.TemplateChecklistNotFound(command.ChecklistId));
-        }
+        var checklist = await checklistService.CreateChecklistForDateAsync(command.UserId, command.SelectedDate, cancellationToken);
 
         // Verify the workout template exists
         var workoutTemplate = await context.WorkoutTemplates

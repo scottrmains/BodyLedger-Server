@@ -9,32 +9,28 @@ using System.Threading.Tasks;
 
 namespace Infrastructure.Services
 {
-    public class DeepseekService : IDeepseekService
+    public class AiService : IAiService
     {
         private readonly HttpClient _httpClient;
         private readonly string _apiKey;
         private readonly string _endpoint;
 
-        public DeepseekService(IConfiguration configuration, HttpClient httpClient)
+        public AiService(IConfiguration configuration, HttpClient httpClient)
         {
             _httpClient = httpClient;
-            _apiKey = configuration["Deepseek:ApiKey"];
-            _endpoint = configuration["Deepseek:BaseUrl"];
+            _apiKey = configuration["Gemini:ApiKey"];
+            _endpoint = configuration["Gemini:BaseUrl"];
         }
 
-        public async Task<List<GeneratedExercise>> GenerateWorkoutExercises(
-                string workoutName,
-                string description,
-                CancellationToken cancellationToken)
+        public async Task<TResult> GenerateContent<TResult>(
+            string prompt,
+            JsonSerializerOptions? jsonOptions = null,
+            double temperature = 0.7,
+            int maxOutputTokens = 8192,
+            CancellationToken cancellationToken = default)
         {
-            // Create a prompt for the AI
-            var prompt = $"Based on this workout named '{workoutName}' with description '{description}', " +
-                         "generate a list of appropriate exercises with recommended sets and rep ranges. " +
-                         "Format the response as JSON with fields: name, sets, repRange. " +
-                         "Include 4-6 exercises that would make sense for this workout.";
-
-            // Construct the Gemini API request
-            var endpoint = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-pro-exp-02-05:generateContent?key={_apiKey}";
+            // Construct the Gemini API request endpoint
+            var endpoint = _endpoint + _apiKey;
 
             var content = new
             {
@@ -51,10 +47,10 @@ namespace Infrastructure.Services
                 },
                 generationConfig = new
                 {
-                    temperature = 0.7,
+                    temperature,
                     topK = 64,
                     topP = 0.95,
-                    maxOutputTokens = 8192,
+                    maxOutputTokens,
                     responseMimeType = "application/json"
                 }
             };
@@ -68,6 +64,7 @@ namespace Infrastructure.Services
             response.EnsureSuccessStatusCode();
 
             var responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
+
             try
             {
                 // Parse the JSON response
@@ -82,36 +79,35 @@ namespace Infrastructure.Services
 
                 if (string.IsNullOrEmpty(textContent))
                 {
-                    return new List<GeneratedExercise>();
+                    return default;
                 }
 
-                // Clean up the raw JSON string - the issue is with escaped characters
+                // Clean up the raw JSON string
                 textContent = textContent.Replace("\\n", "")
-                                        .Replace("\\\"", "\"")
-                                        .Replace("\\", "");
+                                       .Replace("\\\"", "\"")
+                                       .Replace("\\", "");
 
-                // If the content now has leading/trailing quotes, remove them
+                // If the content has leading/trailing quotes, remove them
                 if (textContent.StartsWith("\"") && textContent.EndsWith("\""))
                 {
                     textContent = textContent.Substring(1, textContent.Length - 2);
                 }
 
-                // Special handling for the JSON format that Gemini returns
-                var options = new JsonSerializerOptions
+                // Use provided options or create default ones
+                var options = jsonOptions ?? new JsonSerializerOptions
                 {
                     PropertyNameCaseInsensitive = true,
                     PropertyNamingPolicy = JsonNamingPolicy.CamelCase
                 };
 
-                var exercises = JsonSerializer.Deserialize<List<GeneratedExercise>>(textContent, options);
-                return exercises ?? new List<GeneratedExercise>();
+                return JsonSerializer.Deserialize<TResult>(textContent, options);
             }
             catch (Exception ex)
             {
+                // Log the error appropriately (consider using ILogger instead of Console)
                 Console.WriteLine($"Error parsing Gemini response: {ex.Message}");
                 Console.WriteLine($"Response content: {responseContent}");
-                return new List<GeneratedExercise>();
-
+                return default;
             }
         }
     }
