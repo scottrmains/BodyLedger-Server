@@ -11,7 +11,6 @@ namespace Domain.Users;
         {
             public Guid UserId { get; set; }
             public User User { get; set; }
-
             public double? CurrentWeight { get; set; }
             public double? GoalWeight { get; set; }
             public TimeSpan? CurrentPace { get; set; }
