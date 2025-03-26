@@ -3,6 +3,7 @@ using Application.Abstractions.Messaging;
 using Domain.Templates;
 using Microsoft.EntityFrameworkCore;
 using SharedKernel;
+using SharedKernel.Enums;
 
 
 namespace Application.Templates.Create

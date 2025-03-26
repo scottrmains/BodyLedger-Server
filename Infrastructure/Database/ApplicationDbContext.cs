@@ -19,6 +19,8 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
 {
     public DbSet<User> Users { get; set; }
     public DbSet<UserProfile> UserProfiles { get; set; }
+    public DbSet<UserAchievement> UserAchievements { get; set; }
+    public DbSet<UserActivityStreak> UserActivityStreaks { get; set; }
 
     // Templates
     public DbSet<Template> Templates { get; set; }
@@ -62,9 +64,7 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
         //     - handlers can fail
 
         int result = await base.SaveChangesAsync(cancellationToken);
-
         await PublishDomainEventsAsync();
-
         return result;
     }
 

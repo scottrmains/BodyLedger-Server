@@ -1,30 +1,20 @@
 ﻿using Application.Abstractions.Data;
 using Application.Abstractions.Services;
 using Application.Assignments.Mapping;
-using Application.Checklists.GetByUserId;
 using Application.Helpers;
-
 using Domain.Assignments;
 using Domain.Checklists;
 using Domain.TemplateAssignments;
 using Domain.Templates;
 using Domain.Templates.Fitness;
-using Infrastructure.Database.Migrations;
 using Microsoft.EntityFrameworkCore;
 using SharedKernel.Responses;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+
 
 namespace Infrastructure.Services;
 
-public class ChecklistService : IChecklistService
+    public class ChecklistService(IApplicationDbContext context, AssignmentMapper mapper) : IChecklistService
     {
-        private readonly IApplicationDbContext context;
-         private readonly AssignmentMapper _mapper;
-        public ChecklistService(IApplicationDbContext context, AssignmentMapper mapper)
-        {
-            this.context = context;
-            _mapper = mapper;
-        }
 
 
     /// <summary>
@@ -192,7 +182,7 @@ public class ChecklistService : IChecklistService
                          today < checklistEntity.StartDate.AddDays(7);
 
         // Use mapper to create properly typed responses
-        var assignments = _mapper.MapAssignmentsToResponses(
+        var assignments = mapper.MapAssignmentsToResponses(
                      checklistEntity.Assignments,
                      workoutActivityByAssignment,
                      fitnessActivitiesByAssignment);

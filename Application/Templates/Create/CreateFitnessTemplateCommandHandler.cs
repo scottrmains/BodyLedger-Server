@@ -4,6 +4,7 @@ using Domain.Templates;
 using Microsoft.EntityFrameworkCore;
 using SharedKernel;
 using Domain.Templates.Fitness;
+using SharedKernel.Enums;
 
 namespace Application.Templates.Create
 {

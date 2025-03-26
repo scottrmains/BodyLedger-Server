@@ -3,37 +3,46 @@ using Domain.Assignments;
 using Domain.Notifications;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Application.Assignments.Complete;
 
-internal sealed class AssignmentCompleteDomainEventHandler(IApplicationDbContext context) : INotificationHandler<AssignmentCompletedDomainEvent>
+internal sealed class AssignmentCompleteDomainEventHandler(IServiceScopeFactory serviceScopeFactory) : INotificationHandler<AssignmentCompletedDomainEvent>
 {
-    public Task Handle(AssignmentCompletedDomainEvent notification, CancellationToken cancellationToken)
+
+
+    public async Task Handle(AssignmentCompletedDomainEvent notification, CancellationToken cancellationToken)
     {
-        var assignment = context.Assignments
-                 .Find(new object[] { notification.AssignmentId }, cancellationToken);
-
-        if (assignment != null)
+        using (var scope = serviceScopeFactory.CreateScope())
         {
-            var template =  context.Templates.Find(new object[] { assignment.TemplateId }, cancellationToken);
-            string templateName = template?.Name ?? "activity";
+            try
+            {
+                var dbContext = scope.ServiceProvider.GetRequiredService<IApplicationDbContext>();
+                var assignment = await dbContext.Assignments
+                    .AsNoTracking()
+                    .Include(x => x.Checklist)
+                    .Include(x => x.Template)
+                    .FirstOrDefaultAsync(x => x.Id == notification.AssignmentId, cancellationToken);
 
-            var notificationEntity = Notification.CreateAssignmentCompletedNotification(
-                assignment.Checklist.UserId,
-                "Assignment Completed",
-                $"Congratulations! You've completed your {templateName} assignment.",
-                assignment.Id,
-                assignment.TemplateId);
+                if (assignment != null)
+                {
+                    string templateName = assignment.Template?.Name ?? "activity";
 
-            context.Notifications.Add(notificationEntity);
-            context.SaveChangesAsync(cancellationToken);  
+                    var notificationEntity = Notification.CreateAssignmentCompletedNotification(
+                        assignment.Checklist.UserId,
+                        "Assignment Completed",
+                        $"Congratulations! You've completed your {templateName} assignment.",
+                        assignment.Id,
+                        assignment.TemplateId);
+
+                    dbContext.Notifications.Add(notificationEntity);
+                    await dbContext.SaveChangesAsync(cancellationToken);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in domain event handler: {ex.Message}");
+            }
         }
-
-        return Task.CompletedTask;
     }
 }

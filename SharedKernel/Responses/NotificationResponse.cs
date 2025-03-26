@@ -7,15 +7,17 @@ using System.Threading.Tasks;
 
 namespace SharedKernel.Responses
 {
-    public sealed class NotificationResponse
-    {
+    public sealed record NotificationsResponse(
+        List<NotificationDto> Notifications,
+        int UnreadCount,
+        int TotalCount);
 
-        public Guid UserId { get; init; }
-        public string Title { get; init; }
-        public string Message { get; init; }
-        public int Type { get; init; }
-        public bool IsRead { get; init; }
-        public DateTime CreatedAt { get; init; }
-        public JsonDocument? Metadata { get; init; }
-    }
+    public sealed record NotificationDto(
+        Guid Id,
+        string Title,
+        string Message,
+        string Type,
+        bool IsRead,
+        DateTime CreatedAt,
+        Dictionary<string, string> Metadata);
 }

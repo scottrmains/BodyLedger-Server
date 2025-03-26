@@ -1,4 +1,6 @@
-﻿namespace SharedKernel;
+﻿using SharedKernel.Enums;
+
+namespace SharedKernel;
 
 public record Error
 {

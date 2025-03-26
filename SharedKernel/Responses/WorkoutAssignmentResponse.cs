@@ -1,5 +1,7 @@
 ﻿
 
+using SharedKernel.Enums;
+
 namespace SharedKernel.Responses;
 public class WorkoutAssignmentResponse : AssignmentResponse
     {

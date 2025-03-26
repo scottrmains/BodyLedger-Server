@@ -2,7 +2,7 @@
 using Application.Templates.GetById;
 using Domain.Templates;
 using Domain.Templates.Fitness;
-using SharedKernel;
+using SharedKernel.Enums;
 using SharedKernel.Responses;
 
 

@@ -1,4 +1,5 @@
-﻿using SharedKernel;
+﻿using Domain.Notifications;
+using SharedKernel;
 
 namespace Domain.Users;
 
@@ -12,6 +13,12 @@ public sealed class User : Entity
 
     public string? RefreshToken { get; set; }
     public DateTime? RefreshTokenExpiryTime { get; set; }
+
+
+    public UserProfile? Profile { get; set; }
+    public UserActivityStreak? ActivityStreak { get; set; }
+    public ICollection<UserAchievement> Achievements { get; private set; } = new List<UserAchievement>();
+    public ICollection<Notification> Notifications { get; private set; } = new List<Notification>();
 
     public void SetRefreshToken(string token, DateTime expiryTime)
     {

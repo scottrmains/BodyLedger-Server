@@ -1,4 +1,6 @@
 ﻿
+using SharedKernel.Enums;
+
 namespace SharedKernel.Responses;
 
 public  class TemplateResponse

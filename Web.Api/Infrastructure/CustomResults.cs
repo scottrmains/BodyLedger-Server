@@ -1,4 +1,5 @@
 ﻿using SharedKernel;
+using SharedKernel.Enums;
 
 namespace Web.Api.Infrastructure;
 

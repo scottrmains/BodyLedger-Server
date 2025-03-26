@@ -8,7 +8,7 @@ using Application.Checklists.GetByUserId;
 using System.Reflection;
 using SharedKernel.Responses;
 using Domain.Templates;
-using SharedKernel;
+using SharedKernel.Enums;
 
 namespace Web.Api
 {

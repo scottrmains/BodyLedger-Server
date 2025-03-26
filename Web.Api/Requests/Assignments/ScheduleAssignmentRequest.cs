@@ -1,6 +1,6 @@
 ﻿using Domain.Assignments;
 using Domain.Templates;
-using SharedKernel;
+using SharedKernel.Enums;
 
 namespace Web.Api.Requests.Assignments
 {

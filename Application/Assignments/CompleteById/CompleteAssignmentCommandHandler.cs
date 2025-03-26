@@ -25,7 +25,6 @@ namespace Application.Assignments.Complete;
             }
 
             assignment.MarkCompleted();
-            assignment.Raise(new AssignmentCompletedDomainEvent(assignment.Id));
 
 
             await context.SaveChangesAsync(cancellationToken); 

@@ -3,6 +3,7 @@ using Domain.Assignments;
 using Domain.Templates;
 using MediatR;
 using SharedKernel;
+using SharedKernel.Enums;
 using System;
 
 namespace Web.Api.Infrastructure
