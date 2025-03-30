@@ -22,7 +22,7 @@ namespace Application.AssignmentItems.Complete
             }
 
             // Verify this item belongs to the correct assignment
-            if (fitnessItem.TemplateAssignmentId != command.AssignmentId)
+            if (fitnessItem.AssignmentId != command.AssignmentId)
             {
                 return Result.Failure(TemplateErrors.TemplateNotFound(command.ItemId));
             }

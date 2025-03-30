@@ -2,14 +2,13 @@
 using Application.AssignmentItems.Complete;
 using MediatR;
 using SharedKernel;
+using SharedKernel.Responses;
 
 namespace Web.Api.Requests.AssignmentItems
 {
     public class CompleteWorkoutItemRequest : CompleteItemRequest
     {
-        public int Sets { get; set; }
-        public int Reps { get; set; }
-        public int? Weight { get; set; }
+        public List<WorkoutSetDto> WorkoutSets { get; set; } = new();
 
         public override IRequest<Result> CreateCommand(Guid itemId, Guid userId)
         {
@@ -17,9 +16,7 @@ namespace Web.Api.Requests.AssignmentItems
                 itemId,
                 AssignmentId,
                 userId,
-                Sets,
-                Reps,
-                Weight);
+                WorkoutSets);
         }
     }
 }

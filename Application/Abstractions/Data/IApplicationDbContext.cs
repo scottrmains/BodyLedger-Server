@@ -1,6 +1,5 @@
 ﻿using Domain.Assignments;
 using Domain.Checklists;
-using Domain.TemplateAssignments;
 using Domain.Templates;
 using Domain.Users;
 
@@ -24,6 +23,7 @@ namespace Application.Abstractions.Data
         // Activities
         DbSet<WorkoutActivity> WorkoutActivities { get; }
         DbSet<FitnessActivity> FitnessActivities { get; }
+        DbSet<WorkoutSet> WorkoutSets { get; }
 
         // Assignments
         DbSet<Assignment> Assignments { get; }

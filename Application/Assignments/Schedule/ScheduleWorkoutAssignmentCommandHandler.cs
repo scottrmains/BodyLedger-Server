@@ -3,7 +3,6 @@ using Application.Abstractions.Messaging;
 using Application.Abstractions.Services;
 using Application.Helpers;
 using Domain.Assignments;
-using Domain.TemplateAssignments;
 using Domain.Templates;
 using Microsoft.EntityFrameworkCore;
 using SharedKernel;
@@ -61,7 +60,7 @@ internal sealed class ScheduleWorkoutAssignmentCommandHandler(IApplicationDbCont
         {
             var workoutActivityAssignment = new WorkoutActivityAssignment
             {
-                TemplateAssignmentId = assignment.Id,
+                AssignmentId = assignment.Id,
                 WorkoutActivityId = activity.Id,
                 WorkoutActivity = activity
             };

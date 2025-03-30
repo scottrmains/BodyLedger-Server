@@ -1,5 +1,4 @@
 ﻿using Domain.Assignments;
-using Domain.TemplateAssignments;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -29,27 +28,37 @@ namespace Infrastructure.Database.Configurations
             builder.HasKey(ai => ai.Id);
             builder.UseTptMappingStrategy();
 
-            builder.HasOne(ai => ai.TemplateAssignment)
+            builder.HasOne(ai => ai.Assignment)
                 .WithMany(ta => ta.Items)
-                .HasForeignKey(ai => ai.TemplateAssignmentId)
+                .HasForeignKey(ai => ai.AssignmentId)
                 .IsRequired();
         }
     }
 
-    public class WorkoutExerciseAssignmentConfiguration : IEntityTypeConfiguration<WorkoutActivityAssignment>
+    public class WorkoutSetConfiguration : IEntityTypeConfiguration<WorkoutSet>
     {
-        public void Configure(EntityTypeBuilder<WorkoutActivityAssignment> builder)
+        public void Configure(EntityTypeBuilder<WorkoutSet> builder)
         {
-            builder.ToTable("workout_activity_assignments");
-            builder.Property(wea => wea.CompletedSets);
-            builder.Property(wea => wea.CompletedReps);
-            builder.Property(wea => wea.ActualWeight);
+            builder.ToTable("workout_sets");
+            builder.HasKey(ws => ws.Id);
 
-            builder.HasOne(wea => wea.WorkoutActivity)
-                .WithMany()
-                .HasForeignKey(wea => wea.WorkoutActivityId)
+            builder.Property(ws => ws.SetNumber)
+                .IsRequired();
+
+            builder.Property(ws => ws.Reps)
+                .IsRequired();
+
+            builder.Property(ws => ws.Weight);
+
+            builder.Property(ws => ws.CreatedAt)
+                .IsRequired();
+
+            builder.HasOne(ws => ws.WorkoutActivityAssignment)
+                .WithMany(waa => waa.Sets)
+                .HasForeignKey(ws => ws.WorkoutActivityAssignmentId)
                 .IsRequired();
         }
+
     }
 
     public class FitnessExerciseAssignmentConfiguration : IEntityTypeConfiguration<FitnessActivityAssignment>

@@ -83,11 +83,11 @@ namespace Domain.Assignments
 
     public class AssignmentItem : Entity
     {
-        public Guid TemplateAssignmentId { get; set; }
+        public Guid AssignmentId { get; set; }
         public bool Completed { get; private set; }
         public DateTime? CompletedDate { get; private set; }
 
-        public Assignment TemplateAssignment { get; set; }
+        public Assignment Assignment { get; set; }
         public virtual void MarkCompleted() 
         {
             Completed = true;

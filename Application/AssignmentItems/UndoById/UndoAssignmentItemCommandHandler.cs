@@ -12,17 +12,16 @@ namespace Application.AssignmentItems.Undo;
         public async Task<Result> Handle(UndoAssignmentItemCommand command, CancellationToken cancellationToken)
         {
         var assignmentItem = await context.AssignmentItems
-            .Include(x => x.TemplateAssignment)
+            .Include(x => x.Assignment)
              .FirstOrDefaultAsync(a => a.Id == command.ItemId, cancellationToken);
 
-      
-
+     
         if (assignmentItem is null)
         {
             return Result.Failure(TemplateErrors.TemplateNotFound(command.ItemId));
         }
 
-        assignmentItem.TemplateAssignment.UndoItemCompletion(command.ItemId);
+        assignmentItem.Assignment.UndoItemCompletion(command.ItemId);
 
         await context.SaveChangesAsync(cancellationToken);
 

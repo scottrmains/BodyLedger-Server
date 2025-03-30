@@ -1,7 +1,5 @@
-﻿using Application.Assignments.GetById;
-using Application.Checklists.GetByUserId;
+﻿
 using Domain.Assignments;
-using Domain.TemplateAssignments;
 using SharedKernel.Responses;
 
 namespace Application.Assignments.Mapping
@@ -97,20 +95,40 @@ namespace Application.Assignments.Mapping
             return fitnessResponse;
         }
 
+        // Add this method to the AssignmentMapper class
+        public WorkoutSetDto MapWorkoutSet(WorkoutSet set)
+        {
+            return new WorkoutSetDto
+            {
+                SetNumber = set.SetNumber,
+                Reps = set.Reps,
+                Weight = set.Weight
+            };
+        }
+
+        // Replace the existing MapWorkoutExerciseAssignment method with this one
         public WorkoutActivityAssignmentResponse MapWorkoutExerciseAssignment(WorkoutActivityAssignment assignment)
         {
-            return new WorkoutActivityAssignmentResponse
+            var response = new WorkoutActivityAssignmentResponse
             {
                 Id = assignment.Id,
                 ActivityName = assignment.WorkoutActivity?.ActivityName ?? "Unknown Activity",
                 RecommendedSets = assignment.WorkoutActivity?.RecommendedSets ?? 0,
                 RepRanges = assignment.WorkoutActivity?.RepRanges ?? "0",
                 Completed = assignment.Completed,
-                CompletedDate = assignment.CompletedDate,
-                CompletedSets = assignment.CompletedSets,
-                CompletedReps = assignment.CompletedReps,
-                ActualWeight = assignment.ActualWeight
+                CompletedDate = assignment.CompletedDate
             };
+
+            // Map individual sets if any
+            if (assignment.Sets != null && assignment.Sets.Any())
+            {
+                response.Sets = assignment.Sets
+                    .OrderBy(s => s.SetNumber)
+                    .Select(MapWorkoutSet)
+                    .ToList();
+            }
+
+            return response;
         }
 
         public FitnessActivityAssignmentResponse MapFitnessExerciseAssignment(FitnessActivityAssignment assignment)

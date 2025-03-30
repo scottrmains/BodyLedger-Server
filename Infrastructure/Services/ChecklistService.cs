@@ -4,7 +4,7 @@ using Application.Assignments.Mapping;
 using Application.Helpers;
 using Domain.Assignments;
 using Domain.Checklists;
-using Domain.TemplateAssignments;
+
 using Domain.Templates;
 using Domain.Templates.Fitness;
 using Microsoft.EntityFrameworkCore;
@@ -159,22 +159,22 @@ namespace Infrastructure.Services;
 
         // Load workout activity assignments
         var workoutActivityAssignments = await context.WorkoutActivityAssignments
-            .Where(e => assignmentIds.Contains(e.TemplateAssignmentId))
+            .Where(e => assignmentIds.Contains(e.AssignmentId))
             .Include(e => e.WorkoutActivity)
             .ToListAsync(cancellationToken);
 
         var fitnessActivityAssignments = await context.FitnessActivityAssignments
-            .Where(e => assignmentIds.Contains(e.TemplateAssignmentId))
+            .Where(e => assignmentIds.Contains(e.AssignmentId))
             .Include(e => e.FitnessExercise)
             .ToListAsync(cancellationToken);
 
         // Group activity assignments by assignment ID
         var workoutActivityByAssignment = workoutActivityAssignments
-            .GroupBy(e => e.TemplateAssignmentId)
+            .GroupBy(e => e.AssignmentId)
             .ToDictionary(g => g.Key, g => g.ToList());
 
         var fitnessActivitiesByAssignment = fitnessActivityAssignments
-            .GroupBy(e => e.TemplateAssignmentId)
+            .GroupBy(e => e.AssignmentId)
             .ToDictionary(g => g.Key, g => g.ToList());
 
         DateTime today = DateTime.UtcNow.Date;
@@ -414,7 +414,7 @@ namespace Infrastructure.Services;
                     {
                         var activityAssignment = new WorkoutActivityAssignment
                         {
-                            TemplateAssignmentId = newAssignment.Id,
+                            AssignmentId = newAssignment.Id,
                             WorkoutActivityId = activity.Id
                         };
 
@@ -431,7 +431,7 @@ namespace Infrastructure.Services;
                     {
                         var activityAssignment = new FitnessActivityAssignment
                         {
-                            TemplateAssignmentId = newAssignment.Id,
+                            AssignmentId = newAssignment.Id,
                             FitnessActivityId = activity.Id
                         };
 

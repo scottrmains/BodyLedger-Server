@@ -2,31 +2,26 @@
 using Domain.Templates;
 
 
-namespace Domain.TemplateAssignments
+namespace Domain.Assignments
 {
- 
+
     public class WorkoutActivityAssignment : AssignmentItem
     {
         public Guid WorkoutActivityId { get; set; }
         public WorkoutActivity WorkoutActivity { get; set; }
-        public int? CompletedSets { get; set; }
-        public int? CompletedReps { get; set; }
-        public int? ActualWeight { get; set; }
+        public ICollection<WorkoutSet> Sets { get; set; } = new List<WorkoutSet>();
 
-        public void MarkCompleted(int? sets = null, int reps = 0, int? weight = null)
+        public void AddSet(int setNumber, int reps, int? weight)
         {
-            CompletedSets = sets;
-            CompletedReps = reps;
-            ActualWeight = weight;
-            base.MarkCompleted(); 
+            var set = new WorkoutSet(Id, setNumber, reps, weight);
+            Sets.Add(set);
         }
+
 
         public new void UndoCompletion()
         {
-            base.UndoCompletion(); 
-            CompletedSets = null;
-            CompletedReps = 0;
-            ActualWeight = null;
+            base.UndoCompletion();
+            Sets.Clear();
         }
     }
 }

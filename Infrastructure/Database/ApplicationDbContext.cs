@@ -2,7 +2,6 @@
 using Domain.Assignments;
 using Domain.Checklists;
 using Domain.Notifications;
-using Domain.TemplateAssignments;
 using Domain.Templates;
 using Domain.Templates.Fitness;
 using Domain.Users;
@@ -30,6 +29,7 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
     // Activities
     public DbSet<WorkoutActivity> WorkoutActivities { get; set; }
     public DbSet<FitnessActivity> FitnessActivities { get; set; }
+    public DbSet<WorkoutSet> WorkoutSets { get; set; }
 
     // Assignments
     public DbSet<Assignment> Assignments { get; set; }

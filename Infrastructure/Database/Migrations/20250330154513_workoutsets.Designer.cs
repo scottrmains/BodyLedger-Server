@@ -4,6 +4,7 @@ using System.Text.Json;
 using Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -12,9 +13,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Database.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250330154513_workoutsets")]
+    partial class workoutsets
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -82,10 +85,6 @@ namespace Infrastructure.Database.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<Guid>("AssignmentId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("assignment_id");
-
                     b.Property<bool>("Completed")
                         .HasColumnType("boolean")
                         .HasColumnName("completed");
@@ -94,10 +93,14 @@ namespace Infrastructure.Database.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("completed_date");
 
+                    b.Property<Guid>("TemplateAssignmentId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("template_assignment_id");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("AssignmentId")
-                        .HasDatabaseName("ix_assignment_items_assignment_id");
+                    b.HasIndex("TemplateAssignmentId")
+                        .HasDatabaseName("ix_assignment_items_template_assignment_id");
 
                     b.ToTable("assignment_items", "public");
 
@@ -552,7 +555,7 @@ namespace Infrastructure.Database.Migrations
                     b.ToTable("fitness_activity_assignments", "public");
                 });
 
-            modelBuilder.Entity("Domain.Assignments.WorkoutActivityAssignment", b =>
+            modelBuilder.Entity("Domain.TemplateAssignments.WorkoutActivityAssignment", b =>
                 {
                     b.HasBaseType("Domain.Assignments.AssignmentItem");
 
@@ -603,19 +606,19 @@ namespace Infrastructure.Database.Migrations
 
             modelBuilder.Entity("Domain.Assignments.AssignmentItem", b =>
                 {
-                    b.HasOne("Domain.Assignments.Assignment", "Assignment")
+                    b.HasOne("Domain.Assignments.Assignment", "TemplateAssignment")
                         .WithMany("Items")
-                        .HasForeignKey("AssignmentId")
+                        .HasForeignKey("TemplateAssignmentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_assignment_items_assignments_assignment_id");
+                        .HasConstraintName("fk_assignment_items_assignments_template_assignment_id");
 
-                    b.Navigation("Assignment");
+                    b.Navigation("TemplateAssignment");
                 });
 
             modelBuilder.Entity("Domain.Assignments.WorkoutSet", b =>
                 {
-                    b.HasOne("Domain.Assignments.WorkoutActivityAssignment", "WorkoutActivityAssignment")
+                    b.HasOne("Domain.TemplateAssignments.WorkoutActivityAssignment", "WorkoutActivityAssignment")
                         .WithMany("Sets")
                         .HasForeignKey("WorkoutActivityAssignmentId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -722,11 +725,11 @@ namespace Infrastructure.Database.Migrations
                     b.Navigation("FitnessExercise");
                 });
 
-            modelBuilder.Entity("Domain.Assignments.WorkoutActivityAssignment", b =>
+            modelBuilder.Entity("Domain.TemplateAssignments.WorkoutActivityAssignment", b =>
                 {
                     b.HasOne("Domain.Assignments.AssignmentItem", null)
                         .WithOne()
-                        .HasForeignKey("Domain.Assignments.WorkoutActivityAssignment", "Id")
+                        .HasForeignKey("Domain.TemplateAssignments.WorkoutActivityAssignment", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_workout_activity_assignments_assignment_items_id");
@@ -762,7 +765,7 @@ namespace Infrastructure.Database.Migrations
                     b.Navigation("Profile");
                 });
 
-            modelBuilder.Entity("Domain.Assignments.WorkoutActivityAssignment", b =>
+            modelBuilder.Entity("Domain.TemplateAssignments.WorkoutActivityAssignment", b =>
                 {
                     b.Navigation("Sets");
                 });

@@ -9,6 +9,7 @@ using System.Reflection;
 using SharedKernel.Responses;
 using Domain.Templates;
 using SharedKernel.Enums;
+using Web.Api.Requests.Templates;
 
 namespace Web.Api
 {
@@ -32,7 +33,7 @@ namespace Web.Api
                 };
             }
 
-            if (type == typeof(Requests.Templates.CreateTemplateRequest))
+            if (type == typeof(CreateTemplateRequest))
             {
                 jsonTypeInfo.PolymorphismOptions = new JsonPolymorphismOptions
                 {
@@ -41,8 +42,8 @@ namespace Web.Api
                     UnknownDerivedTypeHandling = JsonUnknownDerivedTypeHandling.FailSerialization,
                     DerivedTypes =
                 {
-                    new JsonDerivedType(typeof(Requests.Templates.CreateWorkoutTemplateRequest), (int)TemplateType.Workout),
-                    new JsonDerivedType(typeof(Requests.Templates.CreateFitnessTemplateRequest), (int)TemplateType.Fitness),
+                    new JsonDerivedType(typeof(CreateWorkoutTemplateRequest), (int)TemplateType.Workout),
+                    new JsonDerivedType(typeof(CreateFitnessTemplateRequest), (int)TemplateType.Fitness),
                 }
                 };
             }
@@ -61,7 +62,6 @@ namespace Web.Api
                 };
             }
 
-            // Add similar blocks for other polymorphic request types as needed
 
             return jsonTypeInfo;
         }

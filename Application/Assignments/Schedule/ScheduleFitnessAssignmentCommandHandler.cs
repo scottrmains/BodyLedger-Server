@@ -60,7 +60,7 @@ namespace Application.Assignments.Schedule
             {
                 var fitnessActivityAssignment = new FitnessActivityAssignment
                 {
-                    TemplateAssignmentId = assignment.Id,
+                    AssignmentId = assignment.Id,
                     FitnessActivityId = activity.Id,
                     FitnessExercise = activity
                 };
