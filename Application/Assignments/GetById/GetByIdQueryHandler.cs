@@ -47,6 +47,7 @@ internal sealed class GetAssignmentByIdQueryHandler(
         var workoutActivityAssignments = await context.WorkoutActivityAssignments
             .Where(w => assignmentItemIds.Contains(w.Id))
             .Include(w => w.WorkoutActivity)
+            .Include(w => w.Sets)
             .ToListAsync(cancellationToken);
 
         var fitnessActivityAssignments = await context.FitnessActivityAssignments
