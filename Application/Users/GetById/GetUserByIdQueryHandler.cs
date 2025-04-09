@@ -4,6 +4,7 @@ using Application.Abstractions.Messaging;
 using Domain.Users;
 using Microsoft.EntityFrameworkCore;
 using SharedKernel;
+using SharedKernel.Responses;
 
 namespace Application.Users.GetById;
 
@@ -24,7 +25,9 @@ internal sealed class GetUserByIdQueryHandler(IApplicationDbContext context, IUs
                 Id = u.Id,
                 FirstName = u.FirstName,
                 LastName = u.LastName,
-                Email = u.Email
+                Email = u.Email,
+                DateCreated = u.DateCreated,
+                Role = u.Role.ToString()
             })
             .SingleOrDefaultAsync(cancellationToken);
 

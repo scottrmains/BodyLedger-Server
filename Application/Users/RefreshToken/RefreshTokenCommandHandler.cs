@@ -5,6 +5,7 @@ using Application.Users.GetById;
 using Domain.Users;
 using Microsoft.EntityFrameworkCore;
 using SharedKernel;
+using SharedKernel.Responses;
 
 namespace Application.Users.RefreshToken;
 
@@ -28,7 +29,9 @@ internal sealed class RefreshTokenCommandHandler(
             Id = user.Id,
             Email = user.Email,
             FirstName = user.FirstName,
-            LastName = user.LastName
+            LastName = user.LastName,
+            DateCreated = user.DateCreated,
+            Role = user.Role.ToString()
         };
         string accessToken = tokenProvider.Create(user);
 

@@ -4,6 +4,7 @@ using Application.Abstractions.Messaging;
 using Domain.Users;
 using Microsoft.EntityFrameworkCore;
 using SharedKernel;
+using SharedKernel.Responses;
 
 namespace Application.Users.GetByEmail;
 

@@ -1,4 +1,4 @@
-﻿namespace Application.Users.GetByEmail;
+﻿namespace SharedKernel.Responses;
 
 public sealed record UserResponse
 {
@@ -9,4 +9,7 @@ public sealed record UserResponse
     public string FirstName { get; init; }
 
     public string LastName { get; init; }
+    public DateTime DateCreated { get; init; }
+
+    public string Role { get; init; }
 }

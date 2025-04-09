@@ -1,5 +1,6 @@
 ﻿using Application.Abstractions.Messaging;
 using Application.Users.GetById;
+using SharedKernel.Responses;
 
 namespace Application.Users.RefreshToken;
 

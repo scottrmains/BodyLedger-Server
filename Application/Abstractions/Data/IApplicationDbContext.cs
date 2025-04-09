@@ -13,6 +13,8 @@ namespace Application.Abstractions.Data
     public interface IApplicationDbContext
     {
         DbSet<User> Users { get; }
+        DbSet<UserActivityStreak> UserActivityStreaks { get; }
+        DbSet<UserAchievement> UserAchievements { get; }
         DbSet<UserProfile> UserProfiles { get; }
 
         // Templates

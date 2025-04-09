@@ -34,6 +34,13 @@ namespace Infrastructure.Database.Configurations
             builder.Property(u => u.RefreshToken)
                 .HasMaxLength(500);
 
+            builder.Property(u => u.Role)
+                .IsRequired()
+                .HasConversion<string>();
+
+            builder.Property(u => u.DateCreated)
+                .IsRequired();
+
             // Define relationships
             builder.HasOne(u => u.Profile)
                 .WithOne(p => p.User)
