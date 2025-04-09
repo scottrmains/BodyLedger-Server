@@ -31,6 +31,7 @@ namespace Application.Templates.Mapping
                     Name = workout.Name,
                     Description = workout.Description,
                     TemplateType = TemplateType.Workout,
+                    DateCreated= workout.DateCreated,
                     Activities = workoutActivities != null && workoutActivities.TryGetValue(workout.Id, out var activities)
                         ? activities.Select(MapWorkoutActivity).ToList()
                         : workout.Activities?.Select(MapWorkoutActivity).ToList() ?? new List<WorkoutActivityResponse>()
@@ -49,6 +50,7 @@ namespace Application.Templates.Mapping
                         Name = fitness.Name,
                         Description = fitness.Description,
                         TemplateType = TemplateType.Fitness,
+                        DateCreated = fitness.DateCreated,
                         Activities = fitnessActivities != null && fitnessActivities.TryGetValue(fitness.Id, out var activities)
                             ? activities.Select(MapFitnessActivity).ToList()
                             : fitness.Activities?.Select(MapFitnessActivity).ToList() ?? new List<FitnessActivityResponse>()
@@ -82,6 +84,7 @@ namespace Application.Templates.Mapping
                     Id = template.Id,
                     UserId = template.UserId,
                     Name = template.Name,
+                    DateCreated = template.DateCreated,
                     Description = template.Description,
                 };
             }

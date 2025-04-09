@@ -50,7 +50,9 @@ namespace Application.Assignments.Schedule
                 ScheduledDay = command.ScheduledDay,
                 ChecklistId = checklist.Id,
                 IsRecurring = command.IsRecurring,
-                RecurringStartDate = checklist.StartDate
+                RecurringStartDate = checklist.StartDate,
+                TimeOfDay = command.TimeOfDay
+
             };
 
             context.Assignments.Add(assignment);

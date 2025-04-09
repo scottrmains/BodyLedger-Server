@@ -8,7 +8,7 @@ namespace Web.Api.Requests.AssignmentItems
 {
     public class CompleteWorkoutItemRequest : CompleteItemRequest
     {
-        public List<WorkoutSetDto> WorkoutSets { get; set; } = new();
+        public List<WorkoutSetDto> Sets { get; set; } = new();
 
         public override IRequest<Result> CreateCommand(Guid itemId, Guid userId)
         {
@@ -16,7 +16,7 @@ namespace Web.Api.Requests.AssignmentItems
                 itemId,
                 AssignmentId,
                 userId,
-                WorkoutSets);
+                Sets);
         }
     }
 }

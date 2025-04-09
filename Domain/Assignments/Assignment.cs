@@ -2,6 +2,7 @@
 using Domain.Templates;
 using SharedKernel;
 using Domain.Checklists;
+using SharedKernel.Enums;
 
 namespace Domain.Assignments
 {
@@ -26,33 +27,16 @@ namespace Domain.Assignments
 
         public ICollection<AssignmentItem> Items { get; set; } = new List<AssignmentItem>();
 
-        public void MarkItemCompleted(Guid itemId)
+        public void CheckCompletion()
         {
-            var item = Items.FirstOrDefault(i => i.Id == itemId);
-            if (item != null)
+            if (!Completed && Items.All(i => i.Completed))
             {
-                item.MarkCompleted();
-                if (Items.All(i => i.Completed))
-                {
-                    MarkCompleted();
-                }
+                MarkCompleted();
             }
         }
 
-        public void UndoItemCompletion(Guid itemId)
-        {
-            var item = Items.FirstOrDefault(i => i.Id == itemId);
-            if (item != null)
-            {
-                item.UndoCompletion();
-                if (Completed)
-                {
-                    UndoCompletion();
-                }
-            }
-        }
 
-        public  void MarkCompleted()
+        public void MarkCompleted()
         {
             Completed = true;
             CompletedDate = DateTime.UtcNow;
@@ -73,33 +57,9 @@ namespace Domain.Assignments
         }
     }
 
-    public enum TimeOfDay
-    {
-        Anytime = 1,
-        Morning = 2,
-        Afternoon = 3,
-        Evening = 4
-    }
 
-    public class AssignmentItem : Entity
-    {
-        public Guid AssignmentId { get; set; }
-        public bool Completed { get; private set; }
-        public DateTime? CompletedDate { get; private set; }
 
-        public Assignment Assignment { get; set; }
-        public virtual void MarkCompleted() 
-        {
-            Completed = true;
-            CompletedDate = DateTime.UtcNow;
-        }
 
-        public virtual void UndoCompletion()
-        {
-            Completed = false;
-            CompletedDate = null;
-        }
-    }
 }
 
 

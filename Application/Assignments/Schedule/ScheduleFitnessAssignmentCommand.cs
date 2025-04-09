@@ -1,5 +1,6 @@
 ﻿using Application.Abstractions.Messaging;
 using Domain.Assignments;
+using SharedKernel.Enums;
 using System;
 
 namespace Application.Assignments.Schedule

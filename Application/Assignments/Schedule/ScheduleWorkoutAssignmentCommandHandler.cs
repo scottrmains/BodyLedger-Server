@@ -49,7 +49,8 @@ internal sealed class ScheduleWorkoutAssignmentCommandHandler(IApplicationDbCont
             ScheduledDay = command.ScheduledDay,
             ChecklistId = checklist.Id,
             IsRecurring = command.IsRecurring,
-            RecurringStartDate = checklist.StartDate
+            RecurringStartDate = checklist.StartDate,
+            TimeOfDay = command.TimeOfDay
             
         };
 

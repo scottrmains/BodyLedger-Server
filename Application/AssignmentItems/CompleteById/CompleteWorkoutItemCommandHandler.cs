@@ -37,26 +37,21 @@ internal sealed class CompleteWorkoutItemCommandHandler(IApplicationDbContext co
         {
             context.WorkoutSets.RemoveRange(existingSets);
         }
+
         foreach (var setDto in command.WorkoutSets)
         {
-            var workoutSet = new WorkoutSet(
-                command.ItemId,
-                setDto.SetNumber,
-                setDto.Reps,
-                setDto.Weight
-            );
+            var set = new WorkoutSet(
+              workoutItem.Id,
+              setDto.SetNumber,
+              setDto.Reps,
+              setDto.Weight
+          );
 
-            context.WorkoutSets.Add(workoutSet);
+            context.WorkoutSets.Add(set);
+            workoutItem.Sets.Add(set);
         }
+
         workoutItem.MarkCompleted();
-        var assignment = await context.Assignments
-            .Include(a => a.Items)
-            .FirstOrDefaultAsync(a => a.Id == command.AssignmentId, cancellationToken);
-
-        if (assignment != null && assignment.Items.All(i => i.Completed))
-        {
-            assignment.MarkCompleted();
-        }
         await context.SaveChangesAsync(cancellationToken);
 
         return Result.Success();

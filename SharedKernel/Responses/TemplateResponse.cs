@@ -10,6 +10,7 @@ public  class TemplateResponse
     public string Name { get; init; }
     public string Description { get; init; }
     public TemplateType TemplateType { get; init; }
+    public DateTime DateCreated { get; init; }
 
 }
 
