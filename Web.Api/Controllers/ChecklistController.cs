@@ -7,6 +7,8 @@ using SharedKernel;
 using Web.Api.Infrastructure;
 using Web.Api.Extensions;
 using Application.Checklists.GetByUserId;
+using Web.Api.Requests.Checklists;
+using Application.Checklists.Update;
 
 namespace Web.Api.Controllers
 {
@@ -24,6 +26,26 @@ namespace Web.Api.Controllers
         {
             var query = new GetChecklistByUserIdQuery(user.UserId, date);
             Result<ChecklistResponse> result = await sender.Send(query, cancellationToken);
+            return result.Match(Results.Ok, CustomResults.Problem);
+        }
+
+
+        [HttpPut("{checklistId}/log")]
+        public async Task<IResult> UpdateChecklistLog(
+            Guid checklistId,
+            [FromBody] UpdateChecklistLogRequest request,
+            ISender sender,
+            IUserContext user,
+            CancellationToken cancellationToken)
+        {
+            var command = new UpdateChecklistLogCommand(
+                user.UserId,
+                checklistId,
+                request.Weight,
+                request.Notes,
+                request.Mood);
+
+            Result<Result> result = await sender.Send(command, cancellationToken);
             return result.Match(Results.Ok, CustomResults.Problem);
         }
 

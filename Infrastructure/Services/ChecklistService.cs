@@ -150,6 +150,7 @@ namespace Infrastructure.Services;
                 .ThenInclude(a => a.Template)
             .Include(c => c.Assignments)
                 .ThenInclude(a => a.Items)
+             .Include(c => c.Log)
             .FirstOrDefaultAsync(cancellationToken);
 
         if (checklistEntity == null)
@@ -201,6 +202,21 @@ namespace Infrastructure.Services;
             : oldestValidDate;
         var maxDate = today.AddDays(12 * 7);
 
+        ChecklistLogData logData = null;
+        if (checklistEntity.Log != null)
+        {
+            logData = new ChecklistLogData
+            {
+                Id = checklistEntity.Log.Id,
+                Date = checklistEntity.Log.Date,
+                Weight = checklistEntity.Log.Weight,
+                Notes = checklistEntity.Log.Notes,
+                Mood = checklistEntity.Log.Mood,
+                CreatedAt = checklistEntity.Log.CreatedAt,
+                UpdatedAt = checklistEntity.Log.UpdatedAt
+            };
+        }
+
         // Map the TemplateChecklist entity to ChecklistResponse DTO
         var response = new ChecklistResponse
         {
@@ -213,6 +229,7 @@ namespace Infrastructure.Services;
             IsCurrent = isCurrent,
             Assignments = assignments,
             DateRanges = dateRanges,
+            Log = logData,
             CalendarBounds = new CalendarBounds
             {
                 MinDate = minDate,
@@ -235,15 +252,16 @@ namespace Infrastructure.Services;
         return Math.Round((double)completedAssignments / totalAssignments * 100, 1);
     }
 
-    public async Task<Checklist?> EnsureChecklistForWeekWithRecurringAssignments(
-        Guid userId,
-        DateTime targetDate,
-        CancellationToken cancellationToken)
+    public async Task<Checklist> EnsureChecklistForWeekWithRecurringAssignments(
+     Guid userId,
+     DateTime targetDate,
+     CancellationToken cancellationToken)
     {
         // Find the checklist for this week
         var targetWeekStart = TemplateDateHelper.GetCycleStartForReference(targetDate, DayOfWeek.Monday, 0);
         var existingChecklist = await context.Checklists
             .Include(c => c.Assignments)
+            .Include(l => l.Log)
             .FirstOrDefaultAsync(c => c.UserId == userId && c.StartDate == targetWeekStart, cancellationToken);
 
         var today = DateTime.UtcNow.Date;
@@ -254,6 +272,13 @@ namespace Infrastructure.Services;
 
         if (existingChecklist != null)
         {
+            if (existingChecklist.Log == null)
+            {
+                var newLogExisting = existingChecklist.CreateLog();
+                context.ChecklistLogs.Add(newLogExisting);
+                await context.SaveChangesAsync(cancellationToken);
+            }
+
             // If it has no assignments, maybe add recurring ones (but only for current/future weeks)
             if (!existingChecklist.Assignments.Any() && !isPastWeek)
             {
@@ -262,81 +287,58 @@ namespace Infrastructure.Services;
             return existingChecklist;
         }
 
-        if (isPastWeek)
-        {
-            return null;
-        }
+        // For all weeks (past, current, future), check if there's any previous checklist
+        var hasAnyPreviousChecklist = await context.Checklists
+            .AnyAsync(c => c.UserId == userId && c.StartDate < targetWeekStart, cancellationToken);
 
-        // For the current week, always create a checklist
-        if (isCurrentWeek)
+        if (!hasAnyPreviousChecklist && isPastWeek)
         {
-            // Get the most recent checklist to use as a template for StartDay
-            var previousChecklist = await context.Checklists
-                .Where(c => c.UserId == userId && c.StartDate < targetWeekStart)
-                .OrderByDescending(c => c.StartDate)
+            // This is an edge case that shouldn't happen according to your logic
+            // Still, we can handle it by returning the earliest existing checklist
+            var earliestChecklist = await context.Checklists
+                .Where(c => c.UserId == userId)
+                .OrderBy(c => c.StartDate)
                 .FirstOrDefaultAsync(cancellationToken);
 
-            // Create new checklist for current week
-            var newChecklist = new Checklist
+            if (earliestChecklist != null)
             {
-                UserId = userId,
-                StartDay = previousChecklist?.StartDay ?? DayOfWeek.Monday,
-                StartDate = targetWeekStart,
-                Assignments = new List<Assignment>()
-            };
-
-            // Add to context and save to get a valid ID
-            context.Checklists.Add(newChecklist);
-            await context.SaveChangesAsync(cancellationToken);
-
-            // Add recurring assignments if any
-            await AddRecurringAssignmentsToChecklist(userId, newChecklist, cancellationToken);
-
-            return newChecklist;
-        }
-
-        if (isFutureWeek)
-        {
-            // Check if there are recurring assignments
-            var hasRecurringAssignments = await context.Assignments
-                .Include(a => a.Checklist)
-                .AnyAsync(a =>
-                    a.Checklist.UserId == userId &&
-                    a.Checklist.StartDate < targetWeekStart &&
-                    a.IsRecurring &&
-                    (a.RecurringStartDate == null || a.RecurringStartDate <= targetWeekStart),
-                    cancellationToken);
-
-            if (!hasRecurringAssignments)
-            {
-                return null; 
+                return earliestChecklist;
             }
-            // Get the most recent checklist to use as a template for StartDay
-            var previousChecklist = await context.Checklists
-                .Where(c => c.UserId == userId && c.StartDate < targetWeekStart)
-                .OrderByDescending(c => c.StartDate)
-                .FirstOrDefaultAsync(cancellationToken);
 
-            // Create new checklist for future week with recurring assignments
-            var newChecklist = new Checklist
-            {
-                UserId = userId,
-                StartDay = previousChecklist?.StartDay ?? DayOfWeek.Monday,
-                StartDate = targetWeekStart,
-                Assignments = new List<Assignment>()
-            };
-
-            context.Checklists.Add(newChecklist);
-            await context.SaveChangesAsync(cancellationToken);
-            await AddRecurringAssignmentsToChecklist(userId, newChecklist, cancellationToken);
-
-            return newChecklist;
+            // If no checklist exists at all, create one for the current week
+            targetWeekStart = currentWeekStart;
         }
 
-        // Should never reach here, but just in case
-        return null;
-    }
+        // Get the most recent checklist to use as a template for StartDay
+        var previousChecklist = await context.Checklists
+            .Where(c => c.UserId == userId && c.StartDate < targetWeekStart)
+            .OrderByDescending(c => c.StartDate)
+            .FirstOrDefaultAsync(cancellationToken);
 
+        // Create new checklist
+        var newChecklist = new Checklist
+        {
+            UserId = userId,
+            StartDay = previousChecklist?.StartDay ?? DayOfWeek.Monday,
+            StartDate = targetWeekStart,
+            Assignments = new List<Assignment>()
+        };
+
+        context.Checklists.Add(newChecklist);
+        await context.SaveChangesAsync(cancellationToken);
+
+        var newLog = newChecklist.CreateLog();
+        context.ChecklistLogs.Add(newLog);
+        await context.SaveChangesAsync(cancellationToken);
+
+        // Only add recurring assignments for current or future weeks
+        if (!isPastWeek)
+        {
+            await AddRecurringAssignmentsToChecklist(userId, newChecklist, cancellationToken);
+        }
+
+        return newChecklist;
+    }
     private async Task AddRecurringAssignmentsToChecklist(
         Guid userId,
         Checklist targetChecklist,

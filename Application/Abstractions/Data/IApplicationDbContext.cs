@@ -35,7 +35,7 @@ namespace Application.Abstractions.Data
 
         // Checklists
         DbSet<Checklist> Checklists { get; }
-
+        DbSet<ChecklistLog> ChecklistLogs { get; }
         DbSet<Notification> Notifications { get; }
 
         EntityEntry<TEntity> Entry<TEntity>(TEntity entity) where TEntity : class;

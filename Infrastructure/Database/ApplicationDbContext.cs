@@ -39,7 +39,7 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
 
     // Checklists
     public DbSet<Checklist> Checklists { get; set; }
-
+    public DbSet<ChecklistLog> ChecklistLogs { get; set; }
 
     public DbSet<Notification> Notifications { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)

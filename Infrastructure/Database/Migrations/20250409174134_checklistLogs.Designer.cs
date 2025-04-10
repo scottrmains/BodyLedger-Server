@@ -4,6 +4,7 @@ using System.Text.Json;
 using Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -12,9 +13,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Database.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250409174134_checklistLogs")]
+    partial class checklistLogs
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -192,11 +195,12 @@ namespace Infrastructure.Database.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("date");
 
-                    b.Property<int?>("Mood")
+                    b.Property<int>("Mood")
                         .HasColumnType("integer")
                         .HasColumnName("mood");
 
                     b.Property<string>("Notes")
+                        .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("notes");
 
@@ -212,7 +216,6 @@ namespace Infrastructure.Database.Migrations
                         .HasName("pk_checklist_logs");
 
                     b.HasIndex("ChecklistId")
-                        .IsUnique()
                         .HasDatabaseName("ix_checklist_logs_checklist_id");
 
                     b.ToTable("checklist_logs", "public");
@@ -682,8 +685,8 @@ namespace Infrastructure.Database.Migrations
             modelBuilder.Entity("Domain.Checklists.ChecklistLog", b =>
                 {
                     b.HasOne("Domain.Checklists.Checklist", "Checklist")
-                        .WithOne("Log")
-                        .HasForeignKey("Domain.Checklists.ChecklistLog", "ChecklistId")
+                        .WithMany()
+                        .HasForeignKey("ChecklistId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_checklist_logs_checklists_checklist_id");
@@ -815,9 +818,6 @@ namespace Infrastructure.Database.Migrations
             modelBuilder.Entity("Domain.Checklists.Checklist", b =>
                 {
                     b.Navigation("Assignments");
-
-                    b.Navigation("Log")
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("Domain.Users.User", b =>

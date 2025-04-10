@@ -12,7 +12,7 @@ namespace Domain.Checklists;
 
         public DateTime DateCreated { get; protected set; } = DateTime.UtcNow;
         public DateTime DateUpdated { get; protected set; } = DateTime.UtcNow;
-
+         public ChecklistLog Log { get; set; }
         public bool IsComplete => Assignments.Any() && Assignments.All(a => a.Completed);
 
         public double CompletionPercentage => Assignments.Any()
@@ -30,5 +30,10 @@ namespace Domain.Checklists;
             return startDate;
         }
 
-    }
+        public ChecklistLog CreateLog()
+        {
+            return new ChecklistLog(this.Id, this.StartDate);
+        }
+
+}
 

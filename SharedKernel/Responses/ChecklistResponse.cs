@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SharedKernel.Enums;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -19,6 +20,18 @@ namespace SharedKernel.Responses
         public List<AssignmentResponse> Assignments { get; init; } = new();
         public List<DateRangeInfo>? DateRanges { get; set; } = new();
         public CalendarBounds? CalendarBounds { get; set; }
+        public ChecklistLogData Log { get; set; }
+    }
+
+    public sealed class ChecklistLogData
+    {
+        public Guid Id { get; set; }
+        public DateTime Date { get; set; }
+        public double? Weight { get; set; }
+        public string? Notes { get; set; }
+        public MoodType? Mood { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public DateTime UpdatedAt { get; set; }
     }
 
 }
