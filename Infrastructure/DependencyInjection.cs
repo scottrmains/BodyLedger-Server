@@ -41,6 +41,7 @@ public static class DependencyInjection
         services.AddSingleton<IDateTimeProvider, DateTimeProvider>();
         services.AddSingleton<ICacheInvalidationService, CacheInvalidationService>();
         services.AddScoped<IChecklistService, ChecklistService>();
+        services.AddScoped<IProgressService, ProgressService>();
         services.AddHttpClient<IAiService, AiService>();
         return services;
     }

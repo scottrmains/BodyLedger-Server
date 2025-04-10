@@ -1,5 +1,12 @@
 
+using Application.Abstractions.Authentication;
+using Application.Progress;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using SharedKernel;
+using SharedKernel.Responses;
+using Web.Api.Extensions;
+using Web.Api.Infrastructure;
 
 namespace BodyLedger.Controllers
 {
@@ -8,13 +15,23 @@ namespace BodyLedger.Controllers
     public class ProgressController : ControllerBase
     {
 
-        private readonly ILogger<ProgressController> _logger;
-
-        public ProgressController(ILogger<ProgressController> logger)
+        [HttpGet("monthly")]
+        public async Task<IResult> GetMonthlyProgress(
+                [FromQuery] int? year,
+                [FromQuery] int? month,
+                ISender sender,
+                IUserContext user,
+                CancellationToken cancellationToken)
         {
-            _logger = logger;
-        }
+            // If year or month is not provided, use current date
+            var today = DateTime.UtcNow;
+            int targetYear = year ?? today.Year;
+            int targetMonth = month ?? today.Month;
 
+            var query = new GetMonthlyProgressQuery(user.UserId, targetYear, targetMonth);
+            Result<MonthlyProgressResponse> result = await sender.Send(query, cancellationToken);
+            return result.Match(Results.Ok, CustomResults.Problem);
+        }
 
     }
 }
