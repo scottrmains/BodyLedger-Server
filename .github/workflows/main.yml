@@ -53,6 +53,64 @@ jobs:
           source: './docker-compose.yml'
           target: '/opt/bodyledger/'
           overwrite: true  # This allows overwriting existing files
+      # After Step 6 and before Step 7
+      # Step 6.5: Create nginx.conf if it doesn't exist
+      - name: Create nginx.conf and SSL directory
+        uses: appleboy/ssh-action@v0.1.6
+        with:
+          host: ${{ secrets.DIGITALOCEAN_DROPLET_IP }}
+          username: root
+          key: ${{ secrets.DROPLET_SSH_KEY }}
+          port: 22
+          script: |
+            mkdir -p /opt/bodyledger/ssl
+            cat > /opt/bodyledger/nginx.conf << 'EOL'
+            server {
+                listen 80;
+                server_name yourdomain.com www.yourdomain.com;
+                
+                # Redirect HTTP to HTTPS
+                location / {
+                    return 301 https://$host$request_uri;
+                }
+            }
+      
+            server {
+                listen 443 ssl;
+                server_name api.trackspace.pro;
+                
+                ssl_certificate /etc/nginx/ssl/certificate.crt;
+                ssl_certificate_key /etc/nginx/ssl/private.key;
+                
+                ssl_protocols TLSv1.2 TLSv1.3;
+                ssl_prefer_server_ciphers on;
+                ssl_session_timeout 1d;
+                ssl_session_cache shared:SSL:10m;
+                
+                location / {
+                    proxy_pass http://api:5000;
+                    proxy_http_version 1.1;
+                    proxy_set_header Upgrade $http_upgrade;
+                    proxy_set_header Connection keep-alive;
+                    proxy_set_header Host $host;
+                    proxy_set_header X-Real-IP $remote_addr;
+                    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                    proxy_set_header X-Forwarded-Proto $scheme;
+                    proxy_cache_bypass $http_upgrade;
+                }
+            }
+            EOL
+            # Create SSL certificate files
+            cat > /opt/bodyledger/ssl/certificate.crt << 'EOL'
+            ${{ secrets.SSL_CERTIFICATE }}
+            EOL
+            
+            cat > /opt/bodyledger/ssl/private.key << 'EOL'
+            ${{ secrets.SSL_PRIVATE_KEY }}
+            EOL
+            
+            # Set proper permissions
+            chmod 600 /opt/bodyledger/ssl/private.key
 
       # Step 7: Deploy to Droplet via SSH
       - name: Deploy to Droplet
