@@ -1,60 +1,191 @@
 name: CI/CD Pipeline
-
 on:
   push:
     branches:
-      - master  # Change this to your default branch
-
+      - master
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-
     steps:
       # Step 1: Checkout the repository
       - name: Checkout code
         uses: actions/checkout@v3
-
+      
       # Step 2: Set up Docker Buildx
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
-
+      
       # Step 3: Log in to Docker Hub
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
-
-      # Step 4: Build and push Docker images
-      - name: Build and push Docker images
+      
+      # Step 4: Prepare Nginx files
+      - name: Prepare Nginx files
         run: |
-          docker compose build
-          docker compose push
-
-      # Step 5: Remove existing docker-compose.yml (Optional but recommended)
-      - name: Remove existing docker-compose.yml
-        uses: appleboy/ssh-action@v0.1.6
+          # Create directories
+          mkdir -p ssl
+          
+          # Create nginx.conf
+          cat > nginx.conf << 'EOL'
+          user  nginx;
+          worker_processes  auto;
+          
+          error_log  /var/log/nginx/error.log notice;
+          pid        /var/run/nginx.pid;
+          
+          events {
+              worker_connections  1024;
+          }
+          
+          http {
+              include       /etc/nginx/mime.types;
+              default_type  application/octet-stream;
+              
+              log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                                '$status $body_bytes_sent "$http_referer" '
+                                '"$http_user_agent" "$http_x_forwarded_for"';
+              
+              access_log  /var/log/nginx/access.log  main;
+              
+              sendfile        on;
+              keepalive_timeout  65;
+              
+              server {
+                  listen 80;
+                  server_name api.trackspace.pro;
+                  
+                  location / {
+                      return 301 https://$host$request_uri;
+                  }
+              }
+              
+              server {
+                  listen 443 ssl;
+                  server_name api.trackspace.pro;
+                  
+                  ssl_certificate /etc/nginx/ssl/certificate.crt;
+                  ssl_certificate_key /etc/nginx/ssl/private.key;
+                  
+                  ssl_protocols TLSv1.2 TLSv1.3;
+                  ssl_prefer_server_ciphers on;
+                  ssl_session_timeout 1d;
+                  ssl_session_cache shared:SSL:10m;
+                  
+                  location / {
+                      proxy_pass http://api:5000;
+                      proxy_http_version 1.1;
+                      proxy_set_header Upgrade $http_upgrade;
+                      proxy_set_header Connection keep-alive;
+                      proxy_set_header Host $host;
+                      proxy_set_header X-Real-IP $remote_addr;
+                      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                      proxy_set_header X-Forwarded-Proto $scheme;
+                      proxy_cache_bypass $http_upgrade;
+                  }
+              }
+          }
+          EOL
+          
+          # Create Dockerfile.nginx
+          cat > Dockerfile.nginx << 'EOL'
+          FROM nginx:latest
+          
+          # Create SSL directory
+          RUN mkdir -p /etc/nginx/ssl
+          
+          # Copy the SSL certificates
+          COPY ssl/certificate.crt /etc/nginx/ssl/certificate.crt
+          COPY ssl/private.key /etc/nginx/ssl/private.key
+          
+          # Copy the custom nginx.conf
+          COPY nginx.conf /etc/nginx/nginx.conf
+          
+          # Set proper permissions on the private key
+          RUN chmod 600 /etc/nginx/ssl/private.key
+          EOL
+          
+          # Create SSL certificates from secrets
+          echo "${{ secrets.SSL_CERTIFICATE }}" > ssl/certificate.crt
+          echo "${{ secrets.SSL_PRIVATE_KEY }}" > ssl/private.key
+      
+      # Step 5: Build and push API image
+      - name: Build and push API image
+        run: |
+          docker compose build api
+          docker compose push api
+      
+      # Step 6: Build and push custom Nginx image
+      - name: Build and push Nginx image
+        uses: docker/build-push-action@v4
         with:
-          host: ${{ secrets.DIGITALOCEAN_DROPLET_IP }}
-          username: root
-          key: ${{ secrets.DROPLET_SSH_KEY }}
-          port: 22
-          script: |
-            rm -rf /opt/bodyledger/docker-compose.yml
-
-      # Step 6: Copy docker-compose.yml to Droplet
-      - name: Copy docker-compose.yml to Droplet
+          context: .
+          file: Dockerfile.nginx
+          push: true
+          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/bodyledger-nginx:latest
+      
+      # Step 7: Create updated docker-compose.yml for deployment
+      - name: Create deployment docker-compose.yml
+        run: |
+          cat > docker-compose.deploy.yml << EOL
+          services:
+            api:
+              image: smains/bodyledgerapi:latest
+              depends_on:
+                - db
+              expose:
+                - "5000"
+              environment:
+                ASPNETCORE_ENVIRONMENT: "Production"
+                ConnectionStrings__Database: "Host=db;Port=5432;Database=bodyledger;Username=postgres;Password=H&yjs)2AAbHR&6yF"
+                Jwt__Secret: "0fbdba239cd4ef0b39fd3bcb48585a302fcdc82a4a76b48389f1ed3184203c820b1bad632c451b30d6c12f4ab50d15a31c6d9a954c39483a680c95792e19ce9f185e5b26394f167a3b4f96faea585f977fcc688564b94a7677aa2b8a38a53ba6c88cdb90417354ac5c49cba5ede6a052ebf32aea58cea8e4f4514822ce5b2b5922d4c0da7d3ad74fc2f5f10b7bd868c28b75e1bdb0a34a32827dfa055c4087af3322940f6037154d2881be397cf2bcaf96e18db5256b93d686ef021a8417ff69c4107aa38ca716a13f5737e1475a74e9a271f16730603f66dfc404d3a6707469bcb3d159e72de91b8ec48680c44612ec0526d752df7e73d464fec8f3fe2c23fe"
+                Jwt__Issuer: "body-ledger-api"
+                Jwt__Audience: "body-ledger-clients"
+              networks:
+                - bodyledger-network
+              restart: always
+            nginx:
+              image: ${{ secrets.DOCKER_HUB_USERNAME }}/bodyledger-nginx:latest
+              ports:
+                - "80:80"
+                - "443:443"
+              depends_on:
+                - api
+              networks:
+                - bodyledger-network
+              restart: always
+            db:
+              image: postgres:15-alpine
+              restart: unless-stopped
+              environment:
+                POSTGRES_USER: postgres
+                POSTGRES_PASSWORD: H&yjs)2AAbHR&6yF
+                POSTGRES_DB: bodyledger
+              volumes:
+                - postgres_data:/var/lib/postgresql/data
+              networks:
+                - bodyledger-network
+          volumes:
+            postgres_data:
+          networks:
+            bodyledger-network:
+          EOL
+      
+      # Step 8: Upload docker-compose.yml to Droplet
+      - name: Upload docker-compose.yml to Droplet
         uses: appleboy/scp-action@v0.1.5
         with:
           host: ${{ secrets.DIGITALOCEAN_DROPLET_IP }}
           username: root
           key: ${{ secrets.DROPLET_SSH_KEY }}
           port: 22
-          source: './docker-compose.yml'
-          target: '/opt/bodyledger/'
-          overwrite: true  # This allows overwriting existing files
-
-      # Step 7: Deploy to Droplet via SSH
+          source: "./docker-compose.deploy.yml"
+          target: "/opt/bodyledger/"
+          overwrite: true
+      
+      # Step 9: Deploy to Droplet via SSH
       - name: Deploy to Droplet
         uses: appleboy/ssh-action@v0.1.6
         with:
@@ -64,6 +195,7 @@ jobs:
           port: 22
           script: |
             cd /opt/bodyledger
+            mv docker-compose.deploy.yml docker-compose.yml
             docker compose pull
             docker compose down
             docker compose up -d
