@@ -31,7 +31,7 @@ using HealthChecks.UI.Client;
                 }
                 else
                 {
-                    app.UseCors("Development");
+                    app.UseCors("Production");
                     app.UseSwaggerWithUi();
                     app.ApplyMigrations();
                 }

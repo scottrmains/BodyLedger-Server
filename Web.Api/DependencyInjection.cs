@@ -30,7 +30,15 @@ public static class DependencyInjection
                       .AllowAnyHeader()
                       .AllowAnyMethod()
                       .AllowCredentials();
-        });
+
+                options.AddPolicy("Production", policy =>
+                {
+                    policy.WithOrigins("https://trackspace.pro")
+                          .AllowAnyHeader()
+                          .AllowAnyMethod()
+                          .AllowCredentials();
+                });
+            });
         });
 
         services.AddExceptionHandler<GlobalExceptionHandler>();
