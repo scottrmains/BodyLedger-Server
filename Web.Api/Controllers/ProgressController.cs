@@ -23,7 +23,7 @@ namespace BodyLedger.Controllers
                 IUserContext user,
                 CancellationToken cancellationToken)
         {
-            // If year or month is not provided, use current date
+
             var today = DateTime.UtcNow;
             int targetYear = year ?? today.Year;
             int targetMonth = month ?? today.Month;

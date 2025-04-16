@@ -19,8 +19,8 @@ public class ProgressService(IApplicationDbContext context) : IProgressService
         CancellationToken cancellationToken)
     {
         // Calculate the date range for the specified month
-        var startDate = new DateTime(year, month, 1);
-        var endDate = startDate.AddMonths(1).AddDays(-1);
+        var startDate = new DateTime(year, month, 1).ToUniversalTime();
+        var endDate = startDate.AddMonths(1).AddDays(-1).ToUniversalTime();
 
         // Create the response object
         var response = new MonthlyProgressResponse
@@ -63,6 +63,7 @@ public class ProgressService(IApplicationDbContext context) : IProgressService
         DateTime endDate,
         CancellationToken cancellationToken)
     {
+
         return await context.Checklists
             .Where(c => c.UserId == userId &&
                    c.StartDate <= endDate &&

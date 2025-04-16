@@ -46,7 +46,7 @@ namespace Web.Api.Controllers
 
                     Response.Cookies.Append("refreshToken", response.RefreshToken, cookieOptions);
 
-                    // Return the JWT in the response for client-side storage
+   
                     return Results.Ok(new
                     {
                         jwt = response.AccessToken,
